@@ -7,6 +7,9 @@ import serverInfoBot.api.BattlemetricsController;
 import serverInfoBot.api.model.ServerInfo;
 
 import java.awt.*;
+import java.time.Instant;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 @Service
@@ -44,9 +47,8 @@ public class BattlemetricsService {
         eb.addBlankField(true);
         eb.addField(":clock10: Rundenzeit:", playTime, true);
         eb.addField(":flag_white: Fraktionen:", teamOne + " vs " + teamTwo, true);
-
         eb.setFooter("© official DSG Bot", "https://dsg-gaming.de/images/og.jpg");
-
+        eb.setTimestamp(Instant.now());
         return eb;
     }
 
