@@ -15,4 +15,10 @@ public class ServerInfo {
     private int players;
     private String status;
     private String map;
+    private int playTime;
+    private int pubQueue;
+    private int resQueue;
+    private String teamOne;
+    private String teamTwo;
+
 }

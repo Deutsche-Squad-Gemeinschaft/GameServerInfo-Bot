@@ -38,12 +38,22 @@ public class BattlemetricsController {
         int players = obj.getJSONObject("data").getJSONObject("attributes").getInt("players");
         String status = obj.getJSONObject("data").getJSONObject("attributes").getString("status");
         String map = obj.getJSONObject("data").getJSONObject("attributes").getJSONObject("details").getString("map");
+        int playTime  = obj.getJSONObject("data").getJSONObject("attributes").getJSONObject("details").getInt("squad_playTime");
+        int pubQueue  = obj.getJSONObject("data").getJSONObject("attributes").getJSONObject("details").getInt("squad_publicQueue");
+        int resQueue  = obj.getJSONObject("data").getJSONObject("attributes").getJSONObject("details").getInt("squad_reservedQueue");
+        String teamOne = obj.getJSONObject("data").getJSONObject("attributes").getJSONObject("details").getString("squad_teamOne");
+        String teamTwo = obj.getJSONObject("data").getJSONObject("attributes").getJSONObject("details").getString("squad_teamTwo");
 
         return ServerInfo.builder()
                 .name(name)
                 .players(players)
                 .status(status)
                 .map(map)
+                .playTime(playTime)
+                .pubQueue(pubQueue)
+                .resQueue(resQueue)
+                .teamOne(teamOne)
+                .teamTwo(teamTwo)
                 .build();
     }
 }
