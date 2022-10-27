@@ -1,5 +1,7 @@
 package serverInfoBot.service;
 
+import lombok.Getter;
+import lombok.Setter;
 import net.dv8tion.jda.api.EmbedBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -8,18 +10,20 @@ import serverInfoBot.api.model.ServerInfo;
 
 import java.awt.*;
 import java.time.Instant;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
+@Setter
+@Getter
 @Service
 public class BattlemetricsService {
 
     private BattlemetricsController battlemetricsController;
+    private SquadData squadData;
 
     @Autowired
-    public BattlemetricsService(BattlemetricsController battlemetricsController) {
+    public BattlemetricsService(BattlemetricsController battlemetricsController, SquadData squadData) {
         this.battlemetricsController = battlemetricsController;
+        this.squadData = squadData;
     }
 
     public EmbedBuilder getServerInfo() {
@@ -29,11 +33,13 @@ public class BattlemetricsService {
         String playTime = parsePlayTime(serverInfo.getPlayTime());
         String teamOne = parseTeamName(serverInfo.getTeamOne());
         String teamTwo = parseTeamName(serverInfo.getTeamTwo());
+        String map = serverInfo.getMap();
+        String mapImage = parseMapName(map);
 
-        return createEmbedServerInfo(serverInfo.getName(), serverInfo.getPlayers(), serverInfo.getStatus(), serverInfo.getMap(), totalQueue, playTime, teamOne, teamTwo);
+        return createEmbedServerInfo(serverInfo.getName(), serverInfo.getPlayers(), serverInfo.getStatus(), map, totalQueue, playTime, teamOne, teamTwo, mapImage);
     }
 
-    private EmbedBuilder createEmbedServerInfo(String name, int players, String status, String map, int totalQueue, String playTime, String teamOne, String teamTwo) {
+    private EmbedBuilder createEmbedServerInfo(String name, int players, String status, String map, int totalQueue, String playTime, String teamOne, String teamTwo, String mapImage) {
 
         EmbedBuilder eb = new EmbedBuilder();
 
@@ -48,6 +54,7 @@ public class BattlemetricsService {
         eb.addField(":clock10: Rundenzeit:", playTime, true);
         eb.addField(":flag_white: Fraktionen:", teamOne + " vs " + teamTwo, true);
         eb.setFooter("© official DSG Bot", "https://dsg-gaming.de/images/og.jpg");
+        eb.setImage(mapImage);
         eb.setTimestamp(Instant.now());
         return eb;
     }
@@ -61,17 +68,7 @@ public class BattlemetricsService {
     }
 
     private String parseTeamName(String teamName){
-        ArrayList<String> validTeamNames = new ArrayList<>();
-        validTeamNames.add(0, "USA");
-        validTeamNames.add(1, "USMC");
-        validTeamNames.add(2, "AUS");
-        validTeamNames.add(3, "RUS");
-        validTeamNames.add(4, "RU");
-        validTeamNames.add(5, "GB");
-        validTeamNames.add(6, "INS");
-        validTeamNames.add(7, "MIL");
-        validTeamNames.add(8, "MEA");
-        validTeamNames.add(9, "CAF");
+        ArrayList<String> validTeamNames = squadData.getValidTeamNames();
 
         teamName = teamName.toUpperCase();
         for (String factionName : validTeamNames) {
@@ -80,5 +77,19 @@ public class BattlemetricsService {
             }
         }
         return teamName;
+    }
+
+    private String parseMapName(String mapName){
+
+        ArrayList<ArrayList<String>> mapData = squadData.getMapData();
+
+        mapName = mapName.toUpperCase();
+        for (int i = 0; i < mapData.size(); i++){
+           ArrayList<String> data = mapData.get(i);
+            if (mapName.contains(data.get(0))) {
+                return data.get(1);
+            }
+        }
+        return "https://i.imgur.com/ucy7Jzf.png";
     }
 }

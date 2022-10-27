@@ -10,15 +10,19 @@ public class StartService {
 
     private Bot bot;
     private TaskScheduler taskScheduler;
+    private SquadData squadData;
 
     @Autowired
-    public StartService(Bot bot, TaskScheduler taskScheduler) {
+    public StartService(Bot bot, TaskScheduler taskScheduler, SquadData squadData) {
         this.bot = bot;
         this.taskScheduler = taskScheduler;
+        this.squadData = squadData;
     }
 
     public void start() throws InterruptedException {
         JDA jda = bot.startBot();
         taskScheduler.startScheduleTask(jda);
+        squadData.loadValidTeamNames();
+        squadData.loadMapData();
     }
 }
