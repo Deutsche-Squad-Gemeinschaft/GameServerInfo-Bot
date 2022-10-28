@@ -8,9 +8,11 @@ import org.springframework.stereotype.Service;
 import serverInfoBot.api.BattlemetricsController;
 import serverInfoBot.api.model.ServerInfo;
 
+
 import java.awt.*;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 
 @Setter
 @Getter
@@ -68,7 +70,7 @@ public class BattlemetricsService {
     }
 
     private String parseTeamName(String teamName){
-        ArrayList<String> validTeamNames = squadData.getValidTeamNames();
+        List<String> validTeamNames = squadData.getValidTeamNames();
 
         teamName = teamName.toUpperCase();
         for (String factionName : validTeamNames) {
@@ -81,13 +83,13 @@ public class BattlemetricsService {
 
     private String parseMapName(String mapName){
 
-        ArrayList<ArrayList<String>> mapData = squadData.getMapData();
+        List<ServiceMaps> mapData = squadData.getMapData();
 
         mapName = mapName.toUpperCase();
         for (int i = 0; i < mapData.size(); i++){
-           ArrayList<String> data = mapData.get(i);
-            if (mapName.contains(data.get(0))) {
-                return data.get(1);
+           ServiceMaps serviceMaps = mapData.get(i);
+            if (mapName.contains(serviceMaps.getMapName())) {
+                return serviceMaps.getImageLink();
             }
         }
         return "https://i.imgur.com/ucy7Jzf.png";
