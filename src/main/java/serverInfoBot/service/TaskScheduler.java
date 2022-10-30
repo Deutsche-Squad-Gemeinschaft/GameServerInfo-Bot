@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import serverInfoBot.config.Configuration;
 import serverInfoBot.customExceptions.HandledException;
 
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -41,12 +42,12 @@ public class TaskScheduler {
 
                         if (configuration.isProd == 1) {
                             //jgkp-server
-                            jda.getTextChannelById(configuration.getJgkpTextchannelId()).retrieveMessageById(configuration.getJgkpMessageId()).queue(message -> {
+                            Objects.requireNonNull(jda.getTextChannelById(configuration.getJgkpTextchannelId())).retrieveMessageById(configuration.getJgkpMessageId()).queue(message -> {
                                 message.editMessageEmbeds(eb.build()).queue();
                             });
 
                             //dsg-server
-                            jda.getTextChannelById(configuration.getDsgTextchannelId()).retrieveMessageById(configuration.getDsgMessageId()).queue(message -> {
+                            Objects.requireNonNull(jda.getTextChannelById(configuration.getDsgTextchannelId())).retrieveMessageById(configuration.getDsgMessageId()).queue(message -> {
                                 message.editMessageEmbeds(eb.build()).queue();
                             });
 
@@ -54,7 +55,7 @@ public class TaskScheduler {
 
                         } else if (configuration.isProd == 0) {
                             //test-server
-                            jda.getTextChannelById(configuration.getTestTextchannelId()).retrieveMessageById(configuration.getTestMessageId()).queue(message -> {
+                            Objects.requireNonNull(jda.getTextChannelById(configuration.getTestTextchannelId())).retrieveMessageById(configuration.getTestMessageId()).queue(message -> {
                                 message.editMessageEmbeds(eb.build()).queue();
                             });
 
@@ -66,6 +67,6 @@ public class TaskScheduler {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                }, 0, 3, TimeUnit.MINUTES);
+                }, 0, 1, TimeUnit.MINUTES);
     }
 }
