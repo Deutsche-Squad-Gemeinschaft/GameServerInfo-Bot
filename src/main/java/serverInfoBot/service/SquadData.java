@@ -34,6 +34,7 @@ public class SquadData {
         mapData.add(new ServiceMaps("FOOLSROAD", "https://i.imgur.com/WU71qoq.png"));
         mapData.add(new ServiceMaps("GOOSEBAY", "https://i.imgur.com/JRDgy43.png"));
         mapData.add(new ServiceMaps("GORODOK", "https://i.imgur.com/G2DyEmB.png"));
+        mapData.add(new ServiceMaps("HARJU", "https://i.imgur.com/OofCHFN.png"));
         mapData.add(new ServiceMaps("KAMDESH", "https://i.imgur.com/8agCJms.png"));
         mapData.add(new ServiceMaps("KOHAT", "https://i.imgur.com/D5RWgkB.png"));
         mapData.add(new ServiceMaps("KOKAN", "https://i.imgur.com/Gq8Zuwz.png"));
