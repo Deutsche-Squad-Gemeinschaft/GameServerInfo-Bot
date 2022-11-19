@@ -55,7 +55,7 @@ jobs:
         with:
           push: false
           tags: dsg/gameserverinfo-bot:latest
-          file: dockera/Dockerfile
+          file: docker/Dockerfile
           context: .
 
       - name: Image digest
