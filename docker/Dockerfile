@@ -8,7 +8,7 @@ RUN groupadd --force -g $GUID bot
 RUN useradd -ms /bin/bash --no-user-group -g $GUID -u $UUID bot
 
 # Configure the start script
-COPY start-container /usr/local/bin/start-container
+COPY start-container.sh /usr/local/bin/start-container
 RUN chmod +x /usr/local/bin/start-container
 
 # Configure the supervisor
