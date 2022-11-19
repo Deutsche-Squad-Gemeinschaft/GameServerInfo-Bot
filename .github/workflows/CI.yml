@@ -6,7 +6,7 @@ on:
 
 jobs:
   bot:
-    runs-om: ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
        - uses: actions/checkout@v2
 
@@ -23,9 +23,9 @@ jobs:
               mkdir staging
               cp target/*jar-with-dependencies.jar staging    
           
-        - name: Upload artifact
-          uses: actions/upload-artifact@v1
-          with:
+       - name: Upload artifact
+         uses: actions/upload-artifact@v1
+         with:
             name: Build
             path: staging
 
