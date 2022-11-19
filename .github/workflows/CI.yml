@@ -54,6 +54,7 @@ jobs:
           push: false
           tags: dsg/gameserverinfo-bot:latest
           file: docker/Dockerfile
+          context: .
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
