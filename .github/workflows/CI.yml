@@ -35,6 +35,8 @@ jobs:
     needs: bot
     steps:
     
+      - uses: actions/checkout@v2
+    
       - name: Download build
         uses: actions/download-artifact@master
         with:
