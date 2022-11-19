@@ -21,6 +21,7 @@ jobs:
        - name: Stage built package
          run: |
               mkdir staging
+              ls -l target/
               cp target/*jar-with-dependencies.jar staging    
           
        - name: Upload artifact
