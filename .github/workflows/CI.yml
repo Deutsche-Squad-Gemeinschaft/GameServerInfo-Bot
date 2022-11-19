@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  bot:
+    runs-om: ubuntu-latest
+    steps:
+       - uses: actions/checkout@v2
+
+       - name: Set up JDK 20
+         uses: actions/setup-java@v1
+         with:
+           java-version: 20
+
+       - name: Build project with Maven
+         run: mvn -B package --file pom.xml
+         
+       - name: Stage built package
+         run: |
+              mkdir staging
+              cp target/*jar-with-dependencies.jar staging    
+          
+        - name: Upload artifact
+          uses: actions/upload-artifact@v1
+          with:
+            name: Build
+            path: staging
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2      
+
+      - name: Build
+        id: docker_build
+        uses: docker/build-push-action@v3
+        with:
+          push: false
+          tags: dsg/gameserverinfo-bot:latest
+          file: docker/Dockerfile
+
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
+
+#  push:
+#    runs-on: ubuntu-latest
+#    depends-on: build
+#    steps:
+    
