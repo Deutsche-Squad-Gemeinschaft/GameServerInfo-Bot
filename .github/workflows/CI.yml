@@ -53,7 +53,6 @@ jobs:
         with:
           push: false
           tags: dsg/gameserverinfo-bot:latest
-          file: docker/Dockerfile
           context: docker/
 
       - name: Image digest
