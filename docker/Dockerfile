@@ -1,4 +1,4 @@
-FROM openjdk:20-slim-bullseye
+FROM openjdk:18-slim-bullseye
 
 # Create bot user
 ARG GUID=1000
