@@ -39,7 +39,7 @@ jobs:
         uses: actions/download-artifact@master
         with:
           name: Build
-          path: docker/bot/
+          path: build/
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -53,7 +53,7 @@ jobs:
         with:
           push: false
           tags: dsg/gameserverinfo-bot:latest
-          context: ./docker
+          file: docker/Dockerfile
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
