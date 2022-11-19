@@ -22,7 +22,7 @@ jobs:
          run: |
               mkdir staging
               ls -l target/
-              cp target/*jar-with-dependencies.jar staging    
+              cp target/serverInfoBot-*-SNAPSHOT.jar staging    
           
        - name: Upload artifact
          uses: actions/upload-artifact@v1
