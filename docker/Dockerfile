@@ -14,9 +14,9 @@ RUN chmod +x /usr/local/bin/start-container
 # Configure the supervisor
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Add sources and change permissions
-ADD ./ /bot
+# Add build output to /bot directory and fix possible permission issues
+ADD build/ /bot
 RUN chown -R bot:bot /bot
 
-
+# Run the container
 ENTRYPOINT ["start-container"]
