@@ -38,6 +38,7 @@ public class TaskScheduler {
         final ScheduledFuture<?> taskHandle = scheduler.scheduleWithFixedDelay(
                 () -> {
                     try {
+
                         EmbedBuilder eb = battlemetricsService.getServerInfo();
 
                         if (configuration.isProd == 1) {

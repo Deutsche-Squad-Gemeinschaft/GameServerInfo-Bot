@@ -17,7 +17,7 @@ public class SquadData {
     private List<ServiceMaps> mapData;
 
     public void loadValidTeamNames(){
-        List<String> validTeamNames = Arrays.asList("USA", "USMC", "AUS", "RUS", "RU", "GB", "INS", "MIL", "MEA", "CAF");
+        List<String> validTeamNames = Arrays.asList("USA", "USMC", "AUS", "RUS", "RU", "GB", "INS", "MIL", "MEA", "PLA", "CAF");
         setValidTeamNames(validTeamNames);
         System.out.println("Loaded validTeamNames");
     }
