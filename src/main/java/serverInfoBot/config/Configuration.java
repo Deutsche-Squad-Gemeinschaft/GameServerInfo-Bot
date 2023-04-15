@@ -31,4 +31,6 @@ public class Configuration {
     private String testTextchannelId;
     @NotBlank
     private String testMessageId;
+    @NotBlank
+    private String battlemetricsShowNextMapAPIToken;
 }

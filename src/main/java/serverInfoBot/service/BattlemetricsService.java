@@ -10,6 +10,7 @@ import serverInfoBot.api.model.ServerInfo;
 
 
 import java.awt.*;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class BattlemetricsService {
         this.squadData = squadData;
     }
 
-    public EmbedBuilder getServerInfo() {
+    public EmbedBuilder getServerInfo() throws IOException {
         ServerInfo serverInfo = battlemetricsController.getData();
 
         int totalQueue = calcQueue(serverInfo.getPubQueue(), serverInfo.getResQueue());
@@ -37,10 +38,10 @@ public class BattlemetricsService {
         String map = serverInfo.getMap();
         String mapImage = parseMapName(map);
 
-        return createEmbedServerInfo(serverInfo.getName(), serverInfo.getPlayers(), serverInfo.getStatus(), map, totalQueue, playTime, teamOne, teamTwo, mapImage);
+        return createEmbedServerInfo(serverInfo.getName(), serverInfo.getPlayers(), serverInfo.getStatus(), map, totalQueue, playTime, teamOne, teamTwo, mapImage, serverInfo.getNextLayer());
     }
 
-    private EmbedBuilder createEmbedServerInfo(String name, int players, String status, String map, int totalQueue, String playTime, String teamOne, String teamTwo, String mapImage) {
+    private EmbedBuilder createEmbedServerInfo(String name, int players, String status, String map, int totalQueue, String playTime, String teamOne, String teamTwo, String mapImage, String nextLayer) {
 
         EmbedBuilder eb = new EmbedBuilder();
 
@@ -54,6 +55,7 @@ public class BattlemetricsService {
         eb.addBlankField(true);
         eb.addField(":clock10: Rundenzeit:", playTime, true);
         eb.addField(":flag_white: Fraktionen:", teamOne + " vs " + teamTwo, true);
+        eb.addField(":arrow_right: Nächste Map", nextLayer, false);
         eb.setFooter("© official DSG Bot", "https://dsg-gaming.de/images/og.jpg");
         eb.setImage(mapImage);
         eb.setTimestamp(Instant.now());
