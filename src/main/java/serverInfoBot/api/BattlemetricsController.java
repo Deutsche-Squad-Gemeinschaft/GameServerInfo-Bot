@@ -50,36 +50,6 @@ public class BattlemetricsController {
         String teamTwo = obj.getJSONObject("data").getJSONObject("attributes").getJSONObject("details").getString("squad_teamTwo");
 
 
-
-        // Construct the URL to send the RCON command
-        String rconUrl = "https://api.battlemetrics.com/servers/3219649/command";
-
-        // Set up the HTTP connection
-        URL url = new URL(rconUrl);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("POST");
-        con.setRequestProperty("Authorization", configuration.getBattlemetricsShowNextMapAPIToken());
-        con.setRequestProperty("Content-Type", "application/json");
-        con.setDoOutput(true);
-
-        // Construct the JSON payload for the RCON command
-        String jsonPayload = "{\"data\":{\"type\":\"rconCommand\",\"attributes\":{\"command\":\"squad:showNextMap\"}}}";
-
-        // Send the JSON payload as the HTTP request body
-        con.getOutputStream().write(jsonPayload.getBytes("UTF-8"));
-
-        // Read the response from the server
-        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-        String responseNextLayer = in.readLine();
-
-        in.close();
-
-        // Convert the response to a JSON object
-        JSONObject jsonResponse = new JSONObject(responseNextLayer);
-
-        String nextLayer = jsonResponse.getJSONObject("data").getJSONObject("attributes").getString("result");
-
-
         return ServerInfo.builder()
                 .name(name)
                 .players(players)
@@ -90,7 +60,6 @@ public class BattlemetricsController {
                 .resQueue(resQueue)
                 .teamOne(teamOne)
                 .teamTwo(teamTwo)
-                .nextLayer(nextLayer)
                 .build();
     }
 }

@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import serverInfoBot.api.BattlemetricsController;
+import serverInfoBot.api.model.NextLayer;
 import serverInfoBot.api.model.ServerInfo;
 
 
@@ -21,11 +22,13 @@ public class BattlemetricsService {
 
     private BattlemetricsController battlemetricsController;
     private SquadData squadData;
+    private NextLayer nextLayer;
 
     @Autowired
-    public BattlemetricsService(BattlemetricsController battlemetricsController, SquadData squadData) {
+    public BattlemetricsService(BattlemetricsController battlemetricsController, SquadData squadData, NextLayer nextLayer) {
         this.battlemetricsController = battlemetricsController;
         this.squadData = squadData;
+        this.nextLayer = nextLayer;
     }
 
     public EmbedBuilder getServerInfo() throws IOException {
@@ -38,7 +41,7 @@ public class BattlemetricsService {
         String map = serverInfo.getMap();
         String mapImage = parseMapName(map);
 
-        return createEmbedServerInfo(serverInfo.getName(), serverInfo.getPlayers(), serverInfo.getStatus(), map, totalQueue, playTime, teamOne, teamTwo, mapImage, serverInfo.getNextLayer());
+        return createEmbedServerInfo(serverInfo.getName(), serverInfo.getPlayers(), serverInfo.getStatus(), map, totalQueue, playTime, teamOne, teamTwo, mapImage, nextLayer.getNextLayer());
     }
 
     private EmbedBuilder createEmbedServerInfo(String name, int players, String status, String map, int totalQueue, String playTime, String teamOne, String teamTwo, String mapImage, String nextLayer) {
@@ -55,7 +58,7 @@ public class BattlemetricsService {
         eb.addBlankField(true);
         eb.addField(":clock10: Rundenzeit:", playTime, true);
         eb.addField(":flag_white: Fraktionen:", teamOne + " vs " + teamTwo, true);
-        eb.addField(":arrow_right: Nächste Map", nextLayer, false);
+        eb.addField(":arrow_right: Nächste Map:", nextLayer, false);
         eb.setFooter("© official DSG Bot", "https://dsg-gaming.de/images/og.jpg");
         eb.setImage(mapImage);
         eb.setTimestamp(Instant.now());

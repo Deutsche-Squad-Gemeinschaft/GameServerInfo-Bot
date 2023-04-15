@@ -20,5 +20,4 @@ public class ServerInfo {
     private int resQueue;
     private String teamOne;
     private String teamTwo;
-    private String nextLayer;
 }

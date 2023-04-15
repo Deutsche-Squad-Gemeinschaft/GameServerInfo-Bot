@@ -21,6 +21,7 @@ public class StartService {
 
     public void start() throws InterruptedException {
         JDA jda = bot.startBot();
+        taskScheduler.startScheduleTaskNextLayer(jda);
         taskScheduler.startScheduleTask(jda);
         squadData.loadValidTeamNames();
         squadData.loadMapData();
