@@ -23,16 +23,19 @@ public class BattlemetricsService {
     private BattlemetricsController battlemetricsController;
     private SquadData squadData;
     private NextLayer nextLayer;
+    private ServerInfo serverInfo;
 
     @Autowired
-    public BattlemetricsService(BattlemetricsController battlemetricsController, SquadData squadData, NextLayer nextLayer) {
+    public BattlemetricsService(BattlemetricsController battlemetricsController, SquadData squadData, NextLayer nextLayer, ServerInfo serverInfo) {
         this.battlemetricsController = battlemetricsController;
         this.squadData = squadData;
         this.nextLayer = nextLayer;
+        this.serverInfo = serverInfo;
     }
 
     public EmbedBuilder getServerInfo() throws IOException {
-        ServerInfo serverInfo = battlemetricsController.getData();
+
+        battlemetricsController.getData();
 
         int totalQueue = calcQueue(serverInfo.getPubQueue(), serverInfo.getResQueue());
         String playTime = parsePlayTime(serverInfo.getPlayTime());

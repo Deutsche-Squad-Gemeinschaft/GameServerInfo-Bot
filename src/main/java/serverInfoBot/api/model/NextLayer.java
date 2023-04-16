@@ -11,4 +11,5 @@ import org.springframework.stereotype.Component;
 @Component
 public class NextLayer {
     private String nextLayer;
+    private boolean executedFirstTime = false;
 }

@@ -1,5 +1,7 @@
 package serverInfoBot.service;
 
+import lombok.Getter;
+import lombok.Setter;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 
@@ -7,6 +9,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import serverInfoBot.api.model.NextLayer;
+import serverInfoBot.api.model.ServerInfo;
 import serverInfoBot.config.Configuration;
 import serverInfoBot.customExceptions.HandledException;
 
@@ -21,19 +24,23 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Getter
+@Setter
 public class TaskScheduler {
 
     private BattlemetricsService battlemetricsService;
     private Configuration configuration;
     private NextLayer nextLayer;
+    private ServerInfo serverInfo;
 
     private final String TASK_SCHEDULER_EXCEPTION = "TASK_SCHEDULER_EXCEPTION";
 
     @Autowired
-    public TaskScheduler(BattlemetricsService battlemetricsService, Configuration configuration, NextLayer nextLayer) {
+    public TaskScheduler(BattlemetricsService battlemetricsService, Configuration configuration, NextLayer nextLayer, ServerInfo serverInfo) {
         this.battlemetricsService = battlemetricsService;
         this.configuration = configuration;
         this.nextLayer = nextLayer;
+        this.serverInfo = serverInfo;
     }
 
     //TODO Use Spring Scheduler
@@ -79,42 +86,46 @@ public class TaskScheduler {
                 }, 0, 1, TimeUnit.MINUTES);
     }
 
-    public void startScheduleTaskNextLayer(JDA jda){
+    public void startScheduleTaskNextLayer(){
 
         final ScheduledFuture<?> taskHandle = scheduler.scheduleWithFixedDelay(
                 () -> {
-                    try {
-                        // Construct the URL to send the RCON command
-                        String rconUrl = "https://api.battlemetrics.com/servers/3219649/command";
 
-                        // Set up the HTTP connection
-                        URL url = new URL(rconUrl);
-                        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                        con.setRequestMethod("POST");
-                        con.setRequestProperty("Authorization", configuration.getBattlemetricsShowNextMapAPIToken());
-                        con.setRequestProperty("Content-Type", "application/json");
-                        con.setDoOutput(true);
+                    if (serverInfo.getPlayers() != 0 || !nextLayer.isExecutedFirstTime()) {
+                        try {
+                            // Construct the URL to send the RCON command
+                            String rconUrl = "https://api.battlemetrics.com/servers/3219649/command";
 
-                        // Construct the JSON payload for the RCON command
-                        String jsonPayload = "{\"data\":{\"type\":\"rconCommand\",\"attributes\":{\"command\":\"squad:showNextMap\"}}}";
+                            // Set up the HTTP connection
+                            URL url = new URL(rconUrl);
+                            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                            con.setRequestMethod("POST");
+                            con.setRequestProperty("Authorization", configuration.getBattlemetricsShowNextMapAPIToken());
+                            con.setRequestProperty("Content-Type", "application/json");
+                            con.setDoOutput(true);
 
-                        // Send the JSON payload as the HTTP request body
-                        con.getOutputStream().write(jsonPayload.getBytes("UTF-8"));
+                            // Construct the JSON payload for the RCON command
+                            String jsonPayload = "{\"data\":{\"type\":\"rconCommand\",\"attributes\":{\"command\":\"squad:showNextMap\"}}}";
 
-                        // Read the response from the server
-                        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                        String responseNextLayer = in.readLine();
+                            // Send the JSON payload as the HTTP request body
+                            con.getOutputStream().write(jsonPayload.getBytes("UTF-8"));
 
-                        in.close();
+                            // Read the response from the server
+                            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                            String responseNextLayer = in.readLine();
 
-                        // Convert the response to a JSON object
-                        JSONObject jsonResponse = new JSONObject(responseNextLayer);
+                            in.close();
 
-                        String nextLayerVar = jsonResponse.getJSONObject("data").getJSONObject("attributes").getString("result");
-                        nextLayer.setNextLayer(nextLayerVar);
+                            // Convert the response to a JSON object
+                            JSONObject jsonResponse = new JSONObject(responseNextLayer);
 
-                    }catch (Exception e) {
-                        e.printStackTrace();
+                            String nextLayerVar = jsonResponse.getJSONObject("data").getJSONObject("attributes").getString("result");
+                            nextLayer.setNextLayer(nextLayerVar);
+                            nextLayer.setExecutedFirstTime(true);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 }, 0, 5, TimeUnit.MINUTES);
     }

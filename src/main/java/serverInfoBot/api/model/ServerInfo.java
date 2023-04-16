@@ -4,11 +4,12 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.stereotype.Component;
 
 @Getter
 @Setter
 @EqualsAndHashCode
-@Builder
+@Component
 public class ServerInfo {
 
     private String name;

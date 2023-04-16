@@ -19,13 +19,15 @@ import java.util.Collections;
 public class BattlemetricsController {
 
     private Configuration configuration;
+    private ServerInfo serverInfo;
 
     @Autowired
-    public BattlemetricsController(Configuration configuration) {
+    public BattlemetricsController(Configuration configuration, ServerInfo serverInfo) {
         this.configuration = configuration;
+        this.serverInfo = serverInfo;
     }
 
-    public ServerInfo getData() throws IOException {
+    public void getData() throws IOException {
 
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
@@ -49,17 +51,14 @@ public class BattlemetricsController {
         String teamOne = obj.getJSONObject("data").getJSONObject("attributes").getJSONObject("details").getString("squad_teamOne");
         String teamTwo = obj.getJSONObject("data").getJSONObject("attributes").getJSONObject("details").getString("squad_teamTwo");
 
-
-        return ServerInfo.builder()
-                .name(name)
-                .players(players)
-                .status(status)
-                .map(map)
-                .playTime(playTime)
-                .pubQueue(pubQueue)
-                .resQueue(resQueue)
-                .teamOne(teamOne)
-                .teamTwo(teamTwo)
-                .build();
+        serverInfo.setName(name);
+        serverInfo.setPlayers(players);
+        serverInfo.setStatus(status);
+        serverInfo.setMap(map);
+        serverInfo.setPlayTime(playTime);
+        serverInfo.setPubQueue(pubQueue);
+        serverInfo.setResQueue(resQueue);
+        serverInfo.setTeamOne(teamOne);
+        serverInfo.setTeamTwo(teamTwo);
     }
 }
