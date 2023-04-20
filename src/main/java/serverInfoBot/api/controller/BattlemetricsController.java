@@ -1,4 +1,4 @@
-package serverInfoBot.api;
+package serverInfoBot.api.controller;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,11 +8,7 @@ import org.springframework.web.client.RestTemplate;
 import serverInfoBot.api.model.ServerInfo;
 import serverInfoBot.config.Configuration;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Collections;
 
 @RestController
@@ -27,7 +23,7 @@ public class BattlemetricsController {
         this.serverInfo = serverInfo;
     }
 
-    public void getData() throws IOException {
+    public void getData() {
 
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
@@ -54,7 +50,7 @@ public class BattlemetricsController {
         serverInfo.setName(name);
         serverInfo.setPlayers(players);
         serverInfo.setStatus(status);
-        serverInfo.setMap(map);
+        serverInfo.setLayer(map);
         serverInfo.setPlayTime(playTime);
         serverInfo.setPubQueue(pubQueue);
         serverInfo.setResQueue(resQueue);

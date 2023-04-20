@@ -129,4 +129,18 @@ public class TaskScheduler {
                     }
                 }, 0, 5, TimeUnit.MINUTES);
     }
+
+    public void updateFlagTimeInformationInPanel(){
+
+        final ScheduledFuture<?> taskHandle = scheduler.scheduleWithFixedDelay(
+                () -> {
+
+                        try {
+//TODO calculate the new averages for the info panel once a day.
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                }, 0, 1, TimeUnit.DAYS);
+    }
 }
