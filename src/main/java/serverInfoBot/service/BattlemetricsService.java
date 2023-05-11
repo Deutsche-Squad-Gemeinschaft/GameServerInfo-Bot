@@ -44,9 +44,10 @@ public class BattlemetricsService {
         battlemetricsController.getData();
         String layer = serverInfo.getLayer();
         String nextLayerName = nextLayer.getNextLayer();
+        System.out.println(layer);
+        System.out.println(nextLayerName);
         LayerInformation layerInformation = getLayerInformationByLayerName(layer);
         LayerInformation nextLayerInformation = getNextLayerInformationByLayerName(nextLayerName);
-        assert nextLayerInformation != null;
         String teamOneNext = factionsRepository.findByFactionLong(nextLayerInformation.getTeamOne()).getFactionShort();
         String teamTwoNext = factionsRepository.findByFactionLong(nextLayerInformation.getTeamTwo()).getFactionShort();
         String nextLayerNameAdjusted = nextLayerInformation.getLayerName();
@@ -127,14 +128,20 @@ public class BattlemetricsService {
     private LayerInformation getNextLayerInformationByLayerName(String layerName){
         List<LayerInformation> layerInformations = layerInformationRepository.findAll();
 
+        //Workaround for Tallil
+        if (layerName.contains("Outskirts")) {
+            layerName = layerName.replace(" Outskirts","");
+        }
+
         String adjustedLayerName = layerName.replace("Next level is", "").replace(", layer is", "").trim().replace(" ", "_");
+        System.out.println(adjustedLayerName);
 
         for (LayerInformation layerInformation : layerInformations) {
 
             String generalLayername = layerInformation.getLayerName();
             String generalMapName = layerInformation.getMapName();
             String adjustedGeneralName = generalMapName + "_" + generalLayername;
-
+            System.out.println(adjustedGeneralName);
             if (adjustedGeneralName.equals(adjustedLayerName)) {
                 return layerInformation;
             }
