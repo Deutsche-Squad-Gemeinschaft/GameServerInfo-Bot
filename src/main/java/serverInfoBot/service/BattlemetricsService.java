@@ -128,7 +128,7 @@ public class BattlemetricsService {
     private LayerInformation getNextLayerInformationByLayerName(String layerName){
         List<LayerInformation> layerInformations = layerInformationRepository.findAll();
 
-        //Workaround for Tallil
+        //Workaround for Tallil - maybe same bug with yehorivka_raas_v01
         if (layerName.contains("Outskirts")) {
             layerName = layerName.replace(" Outskirts","");
         }
