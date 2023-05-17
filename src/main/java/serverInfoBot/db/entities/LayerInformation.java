@@ -16,7 +16,8 @@ public class LayerInformation {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
-    private String layerName;
+    private String currentLayerName;
+    private String nextLayerName;
     private String mapName;
     private String mapImageLink;
     private String teamOne;

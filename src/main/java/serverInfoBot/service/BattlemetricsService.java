@@ -13,9 +13,7 @@ import serverInfoBot.db.entities.LayerInformation;
 import serverInfoBot.db.repositories.FactionsRepository;
 import serverInfoBot.db.repositories.LayerInformationRepository;
 
-
 import java.awt.*;
-import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 
@@ -47,10 +45,10 @@ public class BattlemetricsService {
         System.out.println(layer);
         System.out.println(nextLayerName);
         LayerInformation layerInformation = getLayerInformationByLayerName(layer);
-        LayerInformation nextLayerInformation = getNextLayerInformationByLayerName(nextLayerName);
+        LayerInformation nextLayerInformation = getNextLayerInformationByNextLayerName(nextLayerName);
         String teamOneNext = factionsRepository.findByFactionLong(nextLayerInformation.getTeamOne()).getFactionShort();
         String teamTwoNext = factionsRepository.findByFactionLong(nextLayerInformation.getTeamTwo()).getFactionShort();
-        String nextLayerNameAdjusted = nextLayerInformation.getLayerName();
+        String nextLayerNameAdjusted = nextLayerInformation.getCurrentLayerName();
         int totalQueue = calcQueue(serverInfo.getPubQueue(), serverInfo.getResQueue());
         String playTime = parsePlayTime(serverInfo.getPlayTime());
         String teamOne = parseTeamName(serverInfo.getTeamOne());
@@ -107,7 +105,7 @@ public class BattlemetricsService {
         return String.format("%02d:%02d:%02d", playTime / 3600, (playTime % 3600) / 60, (playTime % 60));
     }
 
-    private String parseTeamName(String teamName){
+    private String parseTeamName(String teamName) {
         List<Factions> factions = factionsRepository.findAll();
         teamName = teamName.toUpperCase();
 
@@ -120,31 +118,20 @@ public class BattlemetricsService {
         return teamName;
     }
 
-    private LayerInformation getLayerInformationByLayerName(String layerName){
+    private LayerInformation getLayerInformationByLayerName(String layerName) {
 
-        return layerInformationRepository.findByLayerName(layerName);
+        return layerInformationRepository.findByCurrentLayerName(layerName);
     }
 
-    private LayerInformation getNextLayerInformationByLayerName(String layerName){
-        List<LayerInformation> layerInformations = layerInformationRepository.findAll();
+    private LayerInformation getNextLayerInformationByNextLayerName(String nextLayerName) {
 
-        //Workaround for Tallil - maybe same bug with yehorivka_raas_v01
-        if (layerName.contains("Outskirts")) {
-            layerName = layerName.replace(" Outskirts","");
-        }
-
-        String adjustedLayerName = layerName.replace("Next level is", "").replace(", layer is", "").trim().replace(" ", "_");
+        String adjustedLayerName = nextLayerName.replace("Next level is", "").replace(", layer is", "").trim().replace(" ", "_");
         System.out.println(adjustedLayerName);
 
-        for (LayerInformation layerInformation : layerInformations) {
+        LayerInformation layerInformation = layerInformationRepository.findByNextLayerName(adjustedLayerName);
 
-            String generalLayername = layerInformation.getLayerName();
-            String generalMapName = layerInformation.getMapName();
-            String adjustedGeneralName = generalMapName + "_" + generalLayername;
-            System.out.println(adjustedGeneralName);
-            if (adjustedGeneralName.equals(adjustedLayerName)) {
-                return layerInformation;
-            }
+        if (layerInformation.getNextLayerName().equals(adjustedLayerName)) {
+            return layerInformation;
         }
         return null;
     }

@@ -10,5 +10,6 @@ import java.util.List;
 @Repository
 public interface LayerInformationRepository extends JpaRepository<LayerInformation, Integer> {
 
-    LayerInformation findByLayerName(String layerName);
+    LayerInformation findByCurrentLayerName(String currentLayerName);
+    LayerInformation findByNextLayerName(String nextLayerName);
 }
