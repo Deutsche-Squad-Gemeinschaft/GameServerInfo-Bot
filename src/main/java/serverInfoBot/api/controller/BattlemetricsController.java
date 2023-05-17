@@ -1,5 +1,6 @@
 package serverInfoBot.api.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -8,20 +9,14 @@ import org.springframework.web.client.RestTemplate;
 import serverInfoBot.api.model.ServerInfo;
 import serverInfoBot.config.Configuration;
 
-import java.io.IOException;
 import java.util.Collections;
 
+@RequiredArgsConstructor
 @RestController
 public class BattlemetricsController {
 
-    private Configuration configuration;
-    private ServerInfo serverInfo;
-
-    @Autowired
-    public BattlemetricsController(Configuration configuration, ServerInfo serverInfo) {
-        this.configuration = configuration;
-        this.serverInfo = serverInfo;
-    }
+    private final Configuration configuration;
+    private final ServerInfo serverInfo;
 
     public void getData() {
 

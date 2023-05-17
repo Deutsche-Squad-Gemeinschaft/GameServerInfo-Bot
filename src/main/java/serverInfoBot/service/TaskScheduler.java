@@ -1,10 +1,14 @@
 package serverInfoBot.service;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 
+import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.interactions.components.ItemComponent;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,11 +16,15 @@ import serverInfoBot.api.model.NextLayer;
 import serverInfoBot.api.model.ServerInfo;
 import serverInfoBot.config.Configuration;
 import serverInfoBot.customExceptions.HandledException;
+import serverInfoBot.db.entities.Settings;
+import serverInfoBot.db.repositories.SettingsRepository;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -26,22 +34,15 @@ import java.util.concurrent.TimeUnit;
 @Service
 @Getter
 @Setter
+@RequiredArgsConstructor
 public class TaskScheduler {
 
-    private BattlemetricsService battlemetricsService;
-    private Configuration configuration;
-    private NextLayer nextLayer;
-    private ServerInfo serverInfo;
-
+    private final BattlemetricsService battlemetricsService;
+    private final Configuration configuration;
+    private final NextLayer nextLayer;
+    private final ServerInfo serverInfo;
+    private final SettingsRepository settingsRepository;
     private final String TASK_SCHEDULER_EXCEPTION = "TASK_SCHEDULER_EXCEPTION";
-
-    @Autowired
-    public TaskScheduler(BattlemetricsService battlemetricsService, Configuration configuration, NextLayer nextLayer, ServerInfo serverInfo) {
-        this.battlemetricsService = battlemetricsService;
-        this.configuration = configuration;
-        this.nextLayer = nextLayer;
-        this.serverInfo = serverInfo;
-    }
 
     //TODO Use Spring Scheduler
 
@@ -50,29 +51,59 @@ public class TaskScheduler {
 
     public void startScheduleTask(JDA jda) {
 
+
+        List<ItemComponent> list = new ArrayList<>();
+        list.add(Button.secondary("Match-Start Benachrichtigung", "Match-Start Benachrichtigung").withEmoji(Emoji.fromUnicode("U+1F514")));
+
         final ScheduledFuture<?> taskHandle = scheduler.scheduleWithFixedDelay(
                 () -> {
                     try {
 
+                        Settings settings = settingsRepository.findById(1);
                         EmbedBuilder eb = battlemetricsService.getServerInfo();
 
                         if (configuration.isProd == 1) {
+
+                            if(configuration.getSendNewMessages() == 1){
+                                jda.getTextChannelById(settings.getJgkpTextChannelId()).deleteMessageById(settings.getJgkpMessageId()).queue();
+                                jda.getTextChannelById(settings.getJgkpTextChannelId()).sendMessageEmbeds(eb.build()).addActionRow(Button.primary("notification", "Match-Start Benachrichtigung")).queue((message) -> {
+                                    settings.setJgkpMessageId(message.getId());
+                                });
+
+                                jda.getTextChannelById(settings.getDsgTextChannelId()).deleteMessageById(settings.getDsgMessageId()).queue();
+                                jda.getTextChannelById(settings.getDsgTextChannelId()).sendMessageEmbeds(eb.build()).addActionRow(Button.primary("notification", "Match-Start Benachrichtigung")).queue((message) -> {
+                                    settings.setDsgMessageId(message.getId());
+                                    settingsRepository.save(settings);
+                                });
+                                System.out.println("Replaced Messages (prod)");
+                            }
+
                             //jgkp-server
-                            Objects.requireNonNull(jda.getTextChannelById(configuration.getJgkpTextchannelId())).retrieveMessageById(configuration.getJgkpMessageId()).queue(message -> {
-                                message.editMessageEmbeds(eb.build()).queue();
+                            Objects.requireNonNull(jda.getTextChannelById(settings.getJgkpTextChannelId())).retrieveMessageById(settings.getJgkpMessageId()).queue(message -> {
+                                message.editMessageEmbeds(eb.build()).setActionRow(list).queue();
                             });
 
                             //dsg-server
-                            Objects.requireNonNull(jda.getTextChannelById(configuration.getDsgTextchannelId())).retrieveMessageById(configuration.getDsgMessageId()).queue(message -> {
-                                message.editMessageEmbeds(eb.build()).queue();
+                            Objects.requireNonNull(jda.getTextChannelById(settings.getDsgTextChannelId())).retrieveMessageById(settings.getDsgMessageId()).queue(message -> {
+                                message.editMessageEmbeds(eb.build()).setActionRow(list).queue();
                             });
 
                             System.out.println("Updated Embed (prod)");
 
                         } else if (configuration.isProd == 0) {
+
+                            if(configuration.getSendNewMessages() == 1){
+                                jda.getTextChannelById(settings.getTestTextChannelId()).deleteMessageById(settings.getTestMessageId()).queue();
+                                jda.getTextChannelById(settings.getTestTextChannelId()).sendMessageEmbeds(eb.build()).addActionRow(Button.primary("Test", "Match-Start Benachrichtigung")).queue((message) -> {
+                                    settings.setTestMessageId(message.getId());
+                                    settingsRepository.save(settings);
+                                });
+                                System.out.println("Replaced Messages (localdev)");
+                            }
+
                             //test-server
-                            Objects.requireNonNull(jda.getTextChannelById(configuration.getTestTextchannelId())).retrieveMessageById(configuration.getTestMessageId()).queue(message -> {
-                                message.editMessageEmbeds(eb.build()).queue();
+                            Objects.requireNonNull(jda.getTextChannelById(settings.getTestTextChannelId())).retrieveMessageById(settings.getTestMessageId()).queue(message -> {
+                                message.editMessageEmbeds(eb.build()).setActionRow(list).queue();
                             });
 
                             System.out.println("Updated Embed (localdev)");

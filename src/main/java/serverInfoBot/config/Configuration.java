@@ -15,11 +15,6 @@ public class Configuration {
     public int isProd;
     private String botToken;
     private String battlemetricsApiToken;
-    private String jgkpTextchannelId;
-    private String jgkpMessageId;
-    private String dsgTextchannelId;
-    private String dsgMessageId;
-    private String testTextchannelId;
-    private String testMessageId;
+    private int sendNewMessages;
     private String battlemetricsShowNextMapAPIToken;
 }

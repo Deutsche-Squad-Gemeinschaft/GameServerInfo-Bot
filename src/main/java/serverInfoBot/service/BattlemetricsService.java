@@ -1,41 +1,49 @@
 package serverInfoBot.service;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.dv8tion.jda.api.EmbedBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.interactions.InteractionHook;
+import net.dv8tion.jda.api.utils.concurrent.Task;
 import org.springframework.stereotype.Service;
 import serverInfoBot.api.controller.BattlemetricsController;
 import serverInfoBot.api.model.NextLayer;
 import serverInfoBot.api.model.ServerInfo;
 import serverInfoBot.db.entities.Factions;
+import serverInfoBot.db.entities.LastRequest;
 import serverInfoBot.db.entities.LayerInformation;
+import serverInfoBot.db.entities.Settings;
 import serverInfoBot.db.repositories.FactionsRepository;
+import serverInfoBot.db.repositories.LastRequestRepository;
 import serverInfoBot.db.repositories.LayerInformationRepository;
+import serverInfoBot.db.repositories.SettingsRepository;
+import serverInfoBot.discord.Bot;
 
 import java.awt.*;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Setter
 @Getter
 @Service
+@RequiredArgsConstructor
 public class BattlemetricsService {
 
-    private BattlemetricsController battlemetricsController;
-    private NextLayer nextLayer;
-    private ServerInfo serverInfo;
-    private FactionsRepository factionsRepository;
-    private LayerInformationRepository layerInformationRepository;
-
-    @Autowired
-    public BattlemetricsService(BattlemetricsController battlemetricsController, NextLayer nextLayer, ServerInfo serverInfo, FactionsRepository factionsRepository, LayerInformationRepository layerInformationRepository) {
-        this.battlemetricsController = battlemetricsController;
-        this.nextLayer = nextLayer;
-        this.serverInfo = serverInfo;
-        this.factionsRepository = factionsRepository;
-        this.layerInformationRepository = layerInformationRepository;
-    }
+    private final BattlemetricsController battlemetricsController;
+    private final NextLayer nextLayer;
+    private final ServerInfo serverInfo;
+    private final FactionsRepository factionsRepository;
+    private final LayerInformationRepository layerInformationRepository;
+    private final LastRequestRepository lastRequestRepository;
+    private final Bot bot;
+    private final SettingsRepository settingsRepository;
 
     public EmbedBuilder getServerInfo() {
 
@@ -56,8 +64,27 @@ public class BattlemetricsService {
         String mapImage = layerInformation.getMapImageLink();
         String squadlanes = layerInformation.getSquadlanesLink();
         String squadlanesNext = nextLayerInformation.getSquadlanesLink();
+        int players = serverInfo.getPlayers();
+        String status = serverInfo.getStatus();
+        String name = serverInfo.getName();
 
-        return createEmbedServerInfo(serverInfo.getName(), serverInfo.getPlayers(), serverInfo.getStatus(), layer, totalQueue, playTime, teamOne, teamTwo, mapImage, nextLayerNameAdjusted, squadlanes, teamOneNext, teamTwoNext, squadlanesNext);
+        LastRequest lastRequest = lastRequestRepository.findById(1);
+
+        checkForMapchange(lastRequest.getLayer(), layer);
+
+        lastRequest.setPlayers(players);
+        lastRequest.setLayer(layer);
+        lastRequest.setStatus(status);
+        lastRequest.setTeamOne(teamOne);
+        lastRequest.setTeamTwo(teamTwo);
+        lastRequest.setServerName(name);
+        lastRequest.setPlaytime(playTime);
+        lastRequest.setTotalQueue(totalQueue);
+        lastRequestRepository.save(lastRequest);
+
+
+
+        return createEmbedServerInfo(name, players, status, layer, totalQueue, playTime, teamOne, teamTwo, mapImage, nextLayerNameAdjusted, squadlanes, teamOneNext, teamTwoNext, squadlanesNext);
     }
 
     private EmbedBuilder createEmbedServerInfo(String name, int players, String status, String layer, int totalQueue, String playTime, String teamOne, String teamTwo, String mapImage, String nextLayer, String squadlanes, String teamOneNext, String teamTwoNext, String squadlanesNext) {
@@ -84,7 +111,7 @@ public class BattlemetricsService {
         eb.addField(":beginner: Squadlanes:", squadlanesNext, false);
         //eb.addField(":minibus: Fahrzeuge "+ teamOneNext, "Link", false);
         //eb.addField(":minibus: Fahrzeuge "+ teamTwoNext, "Link", false);
-        //eb.addField(":exclamation: Match-Start Benachrichtigung", "Setze die :bell:-Reaktion, wenn du zu Anfang des nächsten Matches gepingt werden möchtest!", false);
+        eb.addField(":exclamation: Match-Start Benachrichtigung", "Klicke auf den Button unter der Nachricht, wenn du zu Anfang des nächsten Matches gepingt werden möchtest!", false);
         //eb.addBlankField(false);
         //eb.addBlankField(true);
         //eb.addField("ALLGEMEINE INFORMATIONEN", "", true);
@@ -134,5 +161,42 @@ public class BattlemetricsService {
             return layerInformation;
         }
         return null;
+    }
+
+    private void checkForMapchange(String oldLayer, String newLayer){
+        if (!oldLayer.equals(newLayer)) {
+            Settings settings = settingsRepository.findById(1);
+            JDA jda = bot.getJda();
+
+            List<Member> member = jda.getGuildById(settings.getTestGuildId()).findMembersWithRoles(jda.getGuildById(settings.getTestGuildId()).getRolesByName("Match-Start Notification", false).get(0)).get();
+
+            if (member.size() != 0){
+                jda.getTextChannelById(settings.getTestTextChannelId()).sendMessage("**Match-Start Benachrichtigung** \nDas nächste Match hat begonnen! <@&"+jda.getGuildById(settings.getTestGuildId()).getRolesByName("Match-Start Notification", false).get(0).getId()+">").delay(Duration.ofMinutes(10)).flatMap(Message::delete).queue();
+
+                for (Member value : member) {
+                    jda.getGuildById(settings.getTestGuildId()).removeRoleFromMember(value, jda.getGuildById(settings.getTestGuildId()).getRolesByName("Match-Start Notification", false).get(0)).queue();
+                }
+            }
+
+            List<Member> memberDsg = jda.getGuildById(settings.getDsgGuildId()).findMembersWithRoles(jda.getGuildById(settings.getDsgGuildId()).getRolesByName("Match-Start Notification", false).get(0)).get();
+
+            if (memberDsg.size() != 0){
+                jda.getTextChannelById(settings.getDsgTextChannelId()).sendMessage("**Match-Start Benachrichtigung** \nDas nächste Match hat begonnen! <@&"+jda.getGuildById(settings.getDsgGuildId()).getRolesByName("Match-Start Notification", false).get(0).getId()+">").delay(Duration.ofMinutes(10)).flatMap(Message::delete).queue();
+
+                for (Member value : memberDsg) {
+                    jda.getGuildById(settings.getDsgGuildId()).removeRoleFromMember(value, jda.getGuildById(settings.getDsgGuildId()).getRolesByName("Match-Start Notification", false).get(0)).queue();
+                }
+            }
+
+            List<Member> memberjgkp = jda.getGuildById(settings.getJgkpGuildId()).findMembersWithRoles(jda.getGuildById(settings.getJgkpGuildId()).getRolesByName("Match-Start Notification", false).get(0)).get();
+
+            if (memberjgkp.size() != 0){
+                jda.getTextChannelById(settings.getJgkpTextChannelId()).sendMessage("**Match-Start Benachrichtigung** \nDas nächste Match hat begonnen! <@&"+jda.getGuildById(settings.getJgkpGuildId()).getRolesByName("Match-Start Notification", false).get(0).getId()+">").delay(Duration.ofMinutes(10)).flatMap(Message::delete).queue();
+
+                for (Member value : memberjgkp) {
+                    jda.getGuildById(settings.getJgkpGuildId()).removeRoleFromMember(value, jda.getGuildById(settings.getJgkpGuildId()).getRolesByName("Match-Start Notification", false).get(0)).queue();
+                }
+            }
+        }
     }
 }
