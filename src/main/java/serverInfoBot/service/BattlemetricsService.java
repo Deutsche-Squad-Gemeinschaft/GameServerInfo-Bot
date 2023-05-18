@@ -106,7 +106,7 @@ public class BattlemetricsService {
         eb.addField(":clock10: Rundenzeit:", playTime, true);
         eb.addField(":flag_white: Fraktionen:", teamOne + " vs " + teamTwo, true);
         eb.addField(":beginner: Squadlanes:", squadlanes, false);
-        eb.addField(":pushpin: Squadmaps: ", squadmaps, false); //TODO Fahrzeugfotos implementieren
+        eb.addField(":pushpin: Squadmaps: ", squadmaps, false);
         eb.addBlankField(false);
         eb.addField("NÄCHSTES \n MATCH", "", true);
         eb.addField(":map: Map:", nextLayer, true);
