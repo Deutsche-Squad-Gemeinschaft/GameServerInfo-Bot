@@ -22,7 +22,6 @@ public class LayerInformation {
     private String mapImageLink;
     private String teamOne;
     private String teamTwo;
-    private String lineUpTeamOneImageLink;
-    private String lineUpTeamTwoImageLink;
+    private String squadmapsLink;
     private String squadlanesLink;
 }

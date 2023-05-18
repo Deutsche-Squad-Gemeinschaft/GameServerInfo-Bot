@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import serverInfoBot.api.controller.BattlemetricsController;
 import serverInfoBot.api.model.NextLayer;
 import serverInfoBot.api.model.ServerInfo;
+import serverInfoBot.config.Configuration;
 import serverInfoBot.db.entities.Factions;
 import serverInfoBot.db.entities.LastRequest;
 import serverInfoBot.db.entities.LayerInformation;
@@ -37,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 public class BattlemetricsService {
 
     private final BattlemetricsController battlemetricsController;
+    private final Configuration configuration;
     private final NextLayer nextLayer;
     private final ServerInfo serverInfo;
     private final FactionsRepository factionsRepository;
@@ -67,6 +69,8 @@ public class BattlemetricsService {
         int players = serverInfo.getPlayers();
         String status = serverInfo.getStatus();
         String name = serverInfo.getName();
+        String squadmaps = layerInformation.getSquadmapsLink();
+        String squadmapsNext = nextLayerInformation.getSquadmapsLink();
 
         LastRequest lastRequest = lastRequestRepository.findById(1);
 
@@ -84,10 +88,10 @@ public class BattlemetricsService {
 
 
 
-        return createEmbedServerInfo(name, players, status, layer, totalQueue, playTime, teamOne, teamTwo, mapImage, nextLayerNameAdjusted, squadlanes, teamOneNext, teamTwoNext, squadlanesNext);
+        return createEmbedServerInfo(name, players, status, layer, totalQueue, playTime, teamOne, teamTwo, mapImage, nextLayerNameAdjusted, squadlanes, teamOneNext, teamTwoNext, squadlanesNext, squadmaps, squadmapsNext);
     }
 
-    private EmbedBuilder createEmbedServerInfo(String name, int players, String status, String layer, int totalQueue, String playTime, String teamOne, String teamTwo, String mapImage, String nextLayer, String squadlanes, String teamOneNext, String teamTwoNext, String squadlanesNext) {
+    private EmbedBuilder createEmbedServerInfo(String name, int players, String status, String layer, int totalQueue, String playTime, String teamOne, String teamTwo, String mapImage, String nextLayer, String squadlanes, String teamOneNext, String teamTwoNext, String squadlanesNext, String squadmaps, String squadmapsNext) {
 
         EmbedBuilder eb = new EmbedBuilder();
 
@@ -102,15 +106,13 @@ public class BattlemetricsService {
         eb.addField(":clock10: Rundenzeit:", playTime, true);
         eb.addField(":flag_white: Fraktionen:", teamOne + " vs " + teamTwo, true);
         eb.addField(":beginner: Squadlanes:", squadlanes, false);
-        //eb.addField(":minibus: Fahrzeuge "+ teamOne, "Link", false); //TODO Fahrzeugfotos implementieren
-        //eb.addField(":minibus: Fahrzeuge "+ teamTwo, "Link", false);
+        eb.addField(":pushpin: Squadmaps: ", squadmaps, false); //TODO Fahrzeugfotos implementieren
         eb.addBlankField(false);
         eb.addField("NÄCHSTES \n MATCH", "", true);
         eb.addField(":map: Map:", nextLayer, true);
         eb.addField(":flag_white: Fraktionen:", teamOneNext + " vs " + teamTwoNext, true);
         eb.addField(":beginner: Squadlanes:", squadlanesNext, false);
-        //eb.addField(":minibus: Fahrzeuge "+ teamOneNext, "Link", false);
-        //eb.addField(":minibus: Fahrzeuge "+ teamTwoNext, "Link", false);
+        eb.addField(":pushpin: Squadmaps: ", squadmapsNext, false);
         eb.addField(":exclamation: Match-Start Benachrichtigung", "Klicke auf den Button unter der Nachricht, wenn du zu Anfang des nächsten Matches gepingt werden möchtest!", false);
         //eb.addBlankField(false);
         //eb.addBlankField(true);
@@ -168,33 +170,37 @@ public class BattlemetricsService {
             Settings settings = settingsRepository.findById(1);
             JDA jda = bot.getJda();
 
-            List<Member> member = jda.getGuildById(settings.getTestGuildId()).findMembersWithRoles(jda.getGuildById(settings.getTestGuildId()).getRolesByName("Match-Start Notification", false).get(0)).get();
+            if (configuration.isProd == 0) {
+                List<Member> member = jda.getGuildById(settings.getTestGuildId()).findMembersWithRoles(jda.getGuildById(settings.getTestGuildId()).getRolesByName("Match-Start Notification", false).get(0)).get();
 
-            if (member.size() != 0){
-                jda.getTextChannelById(settings.getTestTextChannelId()).sendMessage("**Match-Start Benachrichtigung** \nDas nächste Match hat begonnen! <@&"+jda.getGuildById(settings.getTestGuildId()).getRolesByName("Match-Start Notification", false).get(0).getId()+">").delay(Duration.ofMinutes(10)).flatMap(Message::delete).queue();
+                if (member.size() != 0) {
+                    jda.getTextChannelById(settings.getTestTextChannelId()).sendMessage("**Match-Start Benachrichtigung** \nDas nächste Match hat begonnen! <@&" + jda.getGuildById(settings.getTestGuildId()).getRolesByName("Match-Start Notification", false).get(0).getId() + ">").delay(Duration.ofMinutes(10)).flatMap(Message::delete).queue();
 
-                for (Member value : member) {
-                    jda.getGuildById(settings.getTestGuildId()).removeRoleFromMember(value, jda.getGuildById(settings.getTestGuildId()).getRolesByName("Match-Start Notification", false).get(0)).queue();
+                    for (Member value : member) {
+                        jda.getGuildById(settings.getTestGuildId()).removeRoleFromMember(value, jda.getGuildById(settings.getTestGuildId()).getRolesByName("Match-Start Notification", false).get(0)).queue();
+                    }
                 }
             }
 
-            List<Member> memberDsg = jda.getGuildById(settings.getDsgGuildId()).findMembersWithRoles(jda.getGuildById(settings.getDsgGuildId()).getRolesByName("Match-Start Notification", false).get(0)).get();
+            if (configuration.isProd == 1) {
+                List<Member> memberDsg = jda.getGuildById(settings.getDsgGuildId()).findMembersWithRoles(jda.getGuildById(settings.getDsgGuildId()).getRolesByName("Match-Start Notification", false).get(0)).get();
 
-            if (memberDsg.size() != 0){
-                jda.getTextChannelById(settings.getDsgTextChannelId()).sendMessage("**Match-Start Benachrichtigung** \nDas nächste Match hat begonnen! <@&"+jda.getGuildById(settings.getDsgGuildId()).getRolesByName("Match-Start Notification", false).get(0).getId()+">").delay(Duration.ofMinutes(10)).flatMap(Message::delete).queue();
+                if (memberDsg.size() != 0) {
+                    jda.getTextChannelById(settings.getDsgTextChannelId()).sendMessage("**Match-Start Benachrichtigung** \nDas nächste Match hat begonnen! <@&" + jda.getGuildById(settings.getDsgGuildId()).getRolesByName("Match-Start Notification", false).get(0).getId() + ">").delay(Duration.ofMinutes(10)).flatMap(Message::delete).queue();
 
-                for (Member value : memberDsg) {
-                    jda.getGuildById(settings.getDsgGuildId()).removeRoleFromMember(value, jda.getGuildById(settings.getDsgGuildId()).getRolesByName("Match-Start Notification", false).get(0)).queue();
+                    for (Member value : memberDsg) {
+                        jda.getGuildById(settings.getDsgGuildId()).removeRoleFromMember(value, jda.getGuildById(settings.getDsgGuildId()).getRolesByName("Match-Start Notification", false).get(0)).queue();
+                    }
                 }
-            }
 
-            List<Member> memberjgkp = jda.getGuildById(settings.getJgkpGuildId()).findMembersWithRoles(jda.getGuildById(settings.getJgkpGuildId()).getRolesByName("Match-Start Notification", false).get(0)).get();
+                List<Member> memberjgkp = jda.getGuildById(settings.getJgkpGuildId()).findMembersWithRoles(jda.getGuildById(settings.getJgkpGuildId()).getRolesByName("Match-Start Notification", false).get(0)).get();
 
-            if (memberjgkp.size() != 0){
-                jda.getTextChannelById(settings.getJgkpTextChannelId()).sendMessage("**Match-Start Benachrichtigung** \nDas nächste Match hat begonnen! <@&"+jda.getGuildById(settings.getJgkpGuildId()).getRolesByName("Match-Start Notification", false).get(0).getId()+">").delay(Duration.ofMinutes(10)).flatMap(Message::delete).queue();
+                if (memberjgkp.size() != 0) {
+                    jda.getTextChannelById(settings.getJgkpTextChannelId()).sendMessage("**Match-Start Benachrichtigung** \nDas nächste Match hat begonnen! <@&" + jda.getGuildById(settings.getJgkpGuildId()).getRolesByName("Match-Start Notification", false).get(0).getId() + ">").delay(Duration.ofMinutes(10)).flatMap(Message::delete).queue();
 
-                for (Member value : memberjgkp) {
-                    jda.getGuildById(settings.getJgkpGuildId()).removeRoleFromMember(value, jda.getGuildById(settings.getJgkpGuildId()).getRolesByName("Match-Start Notification", false).get(0)).queue();
+                    for (Member value : memberjgkp) {
+                        jda.getGuildById(settings.getJgkpGuildId()).removeRoleFromMember(value, jda.getGuildById(settings.getJgkpGuildId()).getRolesByName("Match-Start Notification", false).get(0)).queue();
+                    }
                 }
             }
         }
