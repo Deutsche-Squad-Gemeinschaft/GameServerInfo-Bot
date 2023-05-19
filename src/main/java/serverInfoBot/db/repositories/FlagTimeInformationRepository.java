@@ -6,4 +6,5 @@ import serverInfoBot.db.entities.FlagTimeInformation;
 
 @Repository
 public interface FlagTimeInformationRepository extends JpaRepository<FlagTimeInformation, Integer> {
+    FlagTimeInformation findByDate(String date);
 }

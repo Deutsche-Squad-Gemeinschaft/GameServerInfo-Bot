@@ -6,4 +6,5 @@ import serverInfoBot.db.entities.MatchHistory;
 
 @Repository
 public interface MatchHistoryRepository extends JpaRepository<MatchHistory, Integer> {
+    MatchHistory findByDateTime(String dateTime);
 }

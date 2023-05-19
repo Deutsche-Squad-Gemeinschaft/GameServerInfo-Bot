@@ -6,6 +6,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDateTime;
 
 
 @Entity
@@ -24,4 +26,7 @@ public class LastRequest {
     private String playtime;
     private String teamOne;
     private String teamTwo;
+    private String flag;
+    private String date;
+    private String time;
 }

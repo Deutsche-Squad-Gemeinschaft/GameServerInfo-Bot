@@ -18,6 +18,7 @@ public class FlagTimeInformation {
     private Integer id;
     private String date;
     private String liveTime;
-    private int seedingDuration;
+    private String seedingDuration;
     private String seedingStartTime;
+    private String weekday;
 }

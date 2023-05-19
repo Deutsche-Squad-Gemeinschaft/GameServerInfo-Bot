@@ -16,9 +16,12 @@ public class MatchHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
-    private String startDateTime;
-    private String endDateTime;
+    private String startDate;
+    private String startTime;
+    private String endDate;
+    private String endTime;
     private String duration;
     private String layerName;
     private String flag;
+    private String dateTime;
 }

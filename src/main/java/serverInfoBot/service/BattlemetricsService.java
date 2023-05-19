@@ -7,29 +7,25 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.interactions.InteractionHook;
-import net.dv8tion.jda.api.utils.concurrent.Task;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.springframework.stereotype.Service;
 import serverInfoBot.api.controller.BattlemetricsController;
 import serverInfoBot.api.model.NextLayer;
 import serverInfoBot.api.model.ServerInfo;
 import serverInfoBot.config.Configuration;
-import serverInfoBot.db.entities.Factions;
-import serverInfoBot.db.entities.LastRequest;
-import serverInfoBot.db.entities.LayerInformation;
-import serverInfoBot.db.entities.Settings;
-import serverInfoBot.db.repositories.FactionsRepository;
-import serverInfoBot.db.repositories.LastRequestRepository;
-import serverInfoBot.db.repositories.LayerInformationRepository;
-import serverInfoBot.db.repositories.SettingsRepository;
+import serverInfoBot.db.entities.*;
+import serverInfoBot.db.repositories.*;
 import serverInfoBot.discord.Bot;
 
 import java.awt.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Setter
 @Getter
@@ -46,14 +42,14 @@ public class BattlemetricsService {
     private final LastRequestRepository lastRequestRepository;
     private final Bot bot;
     private final SettingsRepository settingsRepository;
+    private final FlagTimeInformationRepository flagTimeInformationRepository;
+    private final MatchHistoryRepository matchHistoryRepository;
 
     public EmbedBuilder getServerInfo() {
 
         battlemetricsController.getData();
         String layer = serverInfo.getLayer();
         String nextLayerName = nextLayer.getNextLayer();
-        System.out.println(layer);
-        System.out.println(nextLayerName);
         LayerInformation layerInformation = getLayerInformationByLayerName(layer);
         LayerInformation nextLayerInformation = getNextLayerInformationByNextLayerName(nextLayerName);
         String teamOneNext = factionsRepository.findByFactionLong(nextLayerInformation.getTeamOne()).getFactionShort();
@@ -74,8 +70,30 @@ public class BattlemetricsService {
 
         LastRequest lastRequest = lastRequestRepository.findById(1);
 
-        checkForMapchange(lastRequest.getLayer(), layer);
+        boolean mapchange = checkForMapchange(lastRequest.getLayer(), layer);
 
+        String flag = checkForFlag(players, layer);
+
+
+        DateTime dt = new DateTime();
+        DateTimeFormatter fmt = DateTimeFormat.forPattern("HH:mm");
+        DateTimeFormatter fmt2 = DateTimeFormat.forPattern("dd.MM.yyyy");
+        DateTimeFormatter fmt3 = DateTimeFormat.forPattern("E");
+        DateTimeFormatter fmt4 = DateTimeFormat.forPattern("dd.MM.yyyy HH:mm");
+        String date = fmt2.print(dt);
+        String time = fmt.print(dt);
+        String weekday = fmt3.print(dt);
+        String dateTime = fmt4.print(dt);
+
+        if (mapchange) {
+            logMatches(layer, flag, date, time, dateTime);
+        }
+
+        checkForFlagChange(lastRequest.getFlag(), flag, date, time, weekday);
+
+        lastRequest.setDate(date);
+        lastRequest.setTime(time);
+        lastRequest.setFlag(flag);
         lastRequest.setPlayers(players);
         lastRequest.setLayer(layer);
         lastRequest.setStatus(status);
@@ -86,12 +104,10 @@ public class BattlemetricsService {
         lastRequest.setTotalQueue(totalQueue);
         lastRequestRepository.save(lastRequest);
 
-
-
-        return createEmbedServerInfo(name, players, status, layer, totalQueue, playTime, teamOne, teamTwo, mapImage, nextLayerNameAdjusted, squadlanes, teamOneNext, teamTwoNext, squadlanesNext, squadmaps, squadmapsNext);
+        return createEmbedServerInfo(name, players, status, layer, totalQueue, playTime, teamOne, teamTwo, mapImage, nextLayerNameAdjusted, squadlanes, teamOneNext, teamTwoNext, squadlanesNext, squadmaps, squadmapsNext, flag);
     }
 
-    private EmbedBuilder createEmbedServerInfo(String name, int players, String status, String layer, int totalQueue, String playTime, String teamOne, String teamTwo, String mapImage, String nextLayer, String squadlanes, String teamOneNext, String teamTwoNext, String squadlanesNext, String squadmaps, String squadmapsNext) {
+    private EmbedBuilder createEmbedServerInfo(String name, int players, String status, String layer, int totalQueue, String playTime, String teamOne, String teamTwo, String mapImage, String nextLayer, String squadlanes, String teamOneNext, String teamTwoNext, String squadlanesNext, String squadmaps, String squadmapsNext, String flag) {
 
         EmbedBuilder eb = new EmbedBuilder();
 
@@ -101,8 +117,8 @@ public class BattlemetricsService {
         eb.addField(":flag_de: Status:", status, true);
         eb.addField(":busts_in_silhouette: Spielerzahl:", players + " +" + totalQueue + " in Queue", true);
         eb.addField(":map: Map:", layer, true);
-        //eb.addField(":globe_with_meridians: Zustand:", "leer", true); //TODO Zustand implementieren
-        eb.addBlankField(true); //Entfernen, wenn Zustand angezeigt werden soll
+        // eb.addField(":globe_with_meridians: Zustand:", flag, true);
+        eb.addBlankField(true); //Delete if flag gets displayed
         eb.addField(":clock10: Rundenzeit:", playTime, true);
         eb.addField(":flag_white: Fraktionen:", teamOne + " vs " + teamTwo, true);
         eb.addField(":beginner: Squadlanes:", squadlanes, false);
@@ -155,7 +171,6 @@ public class BattlemetricsService {
     private LayerInformation getNextLayerInformationByNextLayerName(String nextLayerName) {
 
         String adjustedLayerName = nextLayerName.replace("Next level is", "").replace(", layer is", "").trim().replace(" ", "_");
-        System.out.println(adjustedLayerName);
 
         LayerInformation layerInformation = layerInformationRepository.findByNextLayerName(adjustedLayerName);
 
@@ -165,7 +180,7 @@ public class BattlemetricsService {
         return null;
     }
 
-    private void checkForMapchange(String oldLayer, String newLayer){
+    private boolean checkForMapchange(String oldLayer, String newLayer) {
         if (!oldLayer.equals(newLayer)) {
             Settings settings = settingsRepository.findById(1);
             JDA jda = bot.getJda();
@@ -203,6 +218,97 @@ public class BattlemetricsService {
                     }
                 }
             }
+            return true;
+        }
+        return false;
+    }
+
+    private String checkForFlag(int players, String layer) {
+        if (players <= 2) {
+            return "Leer";
+        }
+        if (players <= 50 && (layer.contains("Skirmish") || layer.contains("Seed"))) {
+            return "Seeding";
+        }
+        if (players > 50 && (!layer.contains("Skirmish") || !layer.contains("Seed"))) {
+            return "Live";
+        }
+        if (players < 50 && (!layer.contains("Skirmish") || !layer.contains("Seed"))) {
+            return "Dead";
+        }
+        return "Unknown";
+    }
+
+    private void checkForFlagChange(String oldFlag, String newFlag, String date, String time, String weekday) {
+
+        FlagTimeInformation flagTimeInformation = flagTimeInformationRepository.findByDate(date);
+
+        if (flagTimeInformation == null) {
+            FlagTimeInformation newFlagTimeInformation = new FlagTimeInformation();
+            newFlagTimeInformation.setDate(date);
+            newFlagTimeInformation.setWeekday(weekday);
+            flagTimeInformationRepository.save(newFlagTimeInformation);
+        }
+
+        flagTimeInformation = flagTimeInformationRepository.findByDate(date);
+
+        if (oldFlag.equals("Leer") && newFlag.equals("Seeding")){
+            flagTimeInformation.setSeedingStartTime(time);
+        }
+
+        if (oldFlag.equals("Seeding") && newFlag.equals("Live")) {
+            flagTimeInformation.setLiveTime(time);
+            String seedingStartTime = flagTimeInformation.getSeedingStartTime();
+
+            SimpleDateFormat dfGerman = new SimpleDateFormat("HH:mm");
+
+            try {
+                Date startDate = dfGerman.parse(seedingStartTime);
+                Date endDate = dfGerman.parse(time);
+                Date resultDate = new Date(endDate.getTime() - startDate.getTime() + dfGerman.parse("00:00").getTime());
+
+                flagTimeInformation.setSeedingDuration(dfGerman.format(resultDate));;
+
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        flagTimeInformationRepository.save(flagTimeInformation);
+    }
+
+    private void logMatches(String layer, String flag, String date, String time, String dateTime){
+
+        MatchHistory matchHistory = new MatchHistory();
+        matchHistory.setLayerName(layer);
+        matchHistory.setFlag(flag);
+        matchHistory.setStartDate(date);
+        matchHistory.setStartTime(time);
+        matchHistory.setDateTime(dateTime);
+        matchHistoryRepository.save(matchHistory);
+
+        MatchHistory newMatch = matchHistoryRepository.findByDateTime(dateTime);
+
+        MatchHistory matchBefore = matchHistoryRepository.findById(newMatch.getId() - 1).orElse(null);
+
+        if (matchBefore != null){
+            matchBefore.setEndDate(date);
+            matchBefore.setEndTime(time);
+
+            if (matchBefore.getFlag().equals("Leer") && flag.equals("Live")){
+                matchBefore.setFlag("Seeding");
+            }
+
+            SimpleDateFormat dfGerman = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+            try {
+                Date startDate = dfGerman.parse(matchBefore.getStartDate() + " " +matchBefore.getStartTime());
+                Date endDate = dfGerman.parse(date + " " + time);
+                Date resultDate = new Date(endDate.getTime() - startDate.getTime() + dfGerman.parse("00.00.0000 00:00").getTime());
+
+                matchBefore.setDuration(dfGerman.format(resultDate));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            matchHistoryRepository.save(matchBefore);
         }
     }
 }
