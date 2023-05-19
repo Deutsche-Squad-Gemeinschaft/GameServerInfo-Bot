@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.springframework.stereotype.Service;
@@ -44,7 +45,7 @@ public class BattlemetricsService {
     private final SettingsRepository settingsRepository;
     private final FlagTimeInformationRepository flagTimeInformationRepository;
     private final MatchHistoryRepository matchHistoryRepository;
-
+    private final LastLoggedMatchRepository lastLoggedMatchRepository;
     public EmbedBuilder getServerInfo() {
 
         battlemetricsController.getData();
@@ -74,8 +75,10 @@ public class BattlemetricsService {
 
         String flag = checkForFlag(players, layer);
 
-
         DateTime dt = new DateTime();
+        DateTimeZone timeZone = DateTimeZone.forID("Europe/Berlin");
+        dt = dt.withZone(timeZone);
+
         DateTimeFormatter fmt = DateTimeFormat.forPattern("HH:mm");
         DateTimeFormatter fmt2 = DateTimeFormat.forPattern("dd.MM.yyyy");
         DateTimeFormatter fmt3 = DateTimeFormat.forPattern("E");
@@ -286,9 +289,12 @@ public class BattlemetricsService {
         matchHistory.setDateTime(dateTime);
         matchHistoryRepository.save(matchHistory);
 
-        MatchHistory newMatch = matchHistoryRepository.findByDateTime(dateTime);
+        MatchHistory matchBefore = matchHistoryRepository.findByDateTime(lastLoggedMatchRepository.findById(1).get().getDateTime());
 
-        MatchHistory matchBefore = matchHistoryRepository.findById(newMatch.getId() - 1).orElse(null);
+        LastLoggedMatch lastLoggedMatch = lastLoggedMatchRepository.findById(1).orElse(null);
+        lastLoggedMatch.setDateTime(dateTime);
+        lastLoggedMatch.setLayerName(layer);
+        lastLoggedMatchRepository.save(lastLoggedMatch);
 
         if (matchBefore != null){
             matchBefore.setEndDate(date);
@@ -298,11 +304,11 @@ public class BattlemetricsService {
                 matchBefore.setFlag("Seeding");
             }
 
-            SimpleDateFormat dfGerman = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+            SimpleDateFormat dfGerman = new SimpleDateFormat("HH:mm");
             try {
                 Date startDate = dfGerman.parse(matchBefore.getStartDate() + " " +matchBefore.getStartTime());
                 Date endDate = dfGerman.parse(date + " " + time);
-                Date resultDate = new Date(endDate.getTime() - startDate.getTime() + dfGerman.parse("00.00.0000 00:00").getTime());
+                Date resultDate = new Date(endDate.getTime() - startDate.getTime() + dfGerman.parse("00:00").getTime());
 
                 matchBefore.setDuration(dfGerman.format(resultDate));
             } catch (ParseException e) {

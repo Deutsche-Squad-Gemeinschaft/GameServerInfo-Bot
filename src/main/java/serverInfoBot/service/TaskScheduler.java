@@ -16,8 +16,12 @@ import serverInfoBot.api.model.NextLayer;
 import serverInfoBot.api.model.ServerInfo;
 import serverInfoBot.config.Configuration;
 import serverInfoBot.customExceptions.HandledException;
+import serverInfoBot.db.entities.FlagTimeInformation;
 import serverInfoBot.db.entities.Settings;
+import serverInfoBot.db.entities.TimeAverages;
+import serverInfoBot.db.repositories.FlagTimeInformationRepository;
 import serverInfoBot.db.repositories.SettingsRepository;
+import serverInfoBot.db.repositories.TimeAveragesRepository;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -42,6 +46,8 @@ public class TaskScheduler {
     private final NextLayer nextLayer;
     private final ServerInfo serverInfo;
     private final SettingsRepository settingsRepository;
+    private final TimeAveragesRepository timeAveragesRepository;
+    private final FlagTimeInformationRepository flagTimeInformationRepository;
     private final String TASK_SCHEDULER_EXCEPTION = "TASK_SCHEDULER_EXCEPTION";
 
     //TODO Use Spring Scheduler
@@ -167,11 +173,99 @@ public class TaskScheduler {
                 () -> {
 
                         try {
-//TODO calculate the new averages for the info panel once a day.
+                            //Calculate Mo-Fr
+                            List<FlagTimeInformation> workdays = new ArrayList<>();
+                            workdays.addAll(flagTimeInformationRepository.findByWeekday("Mo."));
+                            workdays.addAll(flagTimeInformationRepository.findByWeekday("Di."));
+                            workdays.addAll(flagTimeInformationRepository.findByWeekday("Mi."));
+                            workdays.addAll(flagTimeInformationRepository.findByWeekday("Do."));
+                            workdays.addAll(flagTimeInformationRepository.findByWeekday("Fr."));
+
+                            List<List<String>> workdaysInformation = gatherData(workdays);
+
+                            String averageWorkdayLiveTime = calculateAverage(convertTimeToMinutes(workdaysInformation.get(0)));
+                            String averageWorkdaySeedingDuration = calculateAverage(convertTimeToMinutes(workdaysInformation.get(1)));
+                            String averageWorkdaySeedingStartTime = calculateAverage(convertTimeToMinutes(workdaysInformation.get(2)));
+
+                            TimeAverages timeAverages = timeAveragesRepository.findById(1).orElse(null);
+                            timeAverages.setAverageLiveTimeWorkday(averageWorkdayLiveTime);
+                            timeAverages.setAverageSeedingDurationWorkday(averageWorkdaySeedingDuration);
+                            timeAverages.setAverageSeedingStartTimeWorkday(averageWorkdaySeedingStartTime);
+
+                            //Calculate Sa-So
+                            List<FlagTimeInformation> weekend = new ArrayList<>();
+                            weekend.addAll(flagTimeInformationRepository.findByWeekday("Sa."));
+                            weekend.addAll(flagTimeInformationRepository.findByWeekday("So."));
+
+                            List<List<String>> weekendInformation = gatherData(weekend);
+
+                            String averageWeekendLiveTime = calculateAverage(convertTimeToMinutes(weekendInformation.get(0)));
+                            String averageWeekendSeedingDuration = calculateAverage(convertTimeToMinutes(weekendInformation.get(1)));
+                            String averageWeekendSeedingStartTime = calculateAverage(convertTimeToMinutes(weekendInformation.get(2)));
+
+                            timeAverages.setAverageLiveTimeWeekend(averageWeekendLiveTime);
+                            timeAverages.setAverageSeedingDurationWeekend(averageWeekendSeedingDuration);
+                            timeAverages.setAverageSeedingStartTimeWeekend(averageWeekendSeedingStartTime);
+
+                            timeAveragesRepository.save(timeAverages);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
 
                 }, 0, 1, TimeUnit.DAYS);
+    }
+
+    private List<List<String>> gatherData(List<FlagTimeInformation> flagTimeList){
+
+        List<List<String>> flagTimeInformations = new ArrayList<>();
+        List<String> liveTimes = new ArrayList<>();
+        List<String> seedingDurations = new ArrayList<>();
+        List<String> seedingStartTimes = new ArrayList<>();
+
+        for (FlagTimeInformation flagTimeInformation : flagTimeList) {
+            seedingStartTimes.add(flagTimeInformation.getSeedingStartTime());
+            liveTimes.add(flagTimeInformation.getLiveTime());
+            seedingDurations.add(flagTimeInformation.getSeedingDuration());
+        }
+
+        flagTimeInformations.add(liveTimes);
+        flagTimeInformations.add(seedingDurations);
+        flagTimeInformations.add(seedingStartTimes);
+
+        return flagTimeInformations;
+    }
+
+    private List<Integer> convertTimeToMinutes(List<String> workdayLiveTimes){
+
+        List<Integer> workdayLiveTimesMinutes = new ArrayList<>();
+        for (int i = 0; i < workdayLiveTimes.size(); i++){
+            int hours = Integer.parseInt(workdayLiveTimes.get(i).substring(0,2));
+            int minutes = Integer.parseInt(workdayLiveTimes.get(i).substring(3,5));
+            int totalMinutes = hours * 60 + minutes;
+            workdayLiveTimesMinutes.add(totalMinutes);
+        }
+        return workdayLiveTimesMinutes;
+    }
+
+    private String calculateAverage(List<Integer> workdayLiveTimesMinutes){
+        int workdayLiveTimesMinutesAverage = (int) workdayLiveTimesMinutes.stream()
+                .mapToInt(a -> a)
+                .average().orElse(0);
+
+        int averageHours =  workdayLiveTimesMinutesAverage / 60;
+
+        String averageHoursString = String.valueOf(averageHours);
+        if (averageHours < 10){
+            averageHoursString = "0" + averageHours;
+        }
+
+        int averageMinutes = workdayLiveTimesMinutesAverage % 60;
+
+        String averageMinutesString = String.valueOf(averageMinutes);
+        if (averageMinutes < 10){
+            averageMinutesString = "0" + averageMinutes;
+        }
+
+        return averageHoursString + ":" + averageMinutesString;
     }
 }

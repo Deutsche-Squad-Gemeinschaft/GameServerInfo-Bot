@@ -16,5 +16,6 @@ public class StartService {
         JDA jda = bot.startBot();
         taskScheduler.startScheduleTaskNextLayer();
         taskScheduler.startScheduleTask(jda);
+        taskScheduler.updateFlagTimeInformationInPanel();
     }
 }
