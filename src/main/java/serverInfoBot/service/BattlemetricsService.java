@@ -25,6 +25,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.Period;
 import java.util.Date;
 import java.util.List;
 
@@ -46,6 +47,7 @@ public class BattlemetricsService {
     private final FlagTimeInformationRepository flagTimeInformationRepository;
     private final MatchHistoryRepository matchHistoryRepository;
     private final LastLoggedMatchRepository lastLoggedMatchRepository;
+    private final TimeAveragesRepository timeAveragesRepository;
     public EmbedBuilder getServerInfo() {
 
         battlemetricsController.getData();
@@ -107,10 +109,18 @@ public class BattlemetricsService {
         lastRequest.setTotalQueue(totalQueue);
         lastRequestRepository.save(lastRequest);
 
-        return createEmbedServerInfo(name, players, status, layer, totalQueue, playTime, teamOne, teamTwo, mapImage, nextLayerNameAdjusted, squadlanes, teamOneNext, teamTwoNext, squadlanesNext, squadmaps, squadmapsNext, flag);
+        TimeAverages timeAverages = timeAveragesRepository.findById(1).orElse(null);
+        String workdayLiveTime = timeAverages.getAverageLiveTimeWorkday();
+        String workdaySeedingDuration = timeAverages.getAverageSeedingDurationWorkday();
+        String workdaySeedingStartTime = timeAverages.getAverageSeedingStartTimeWorkday();
+        String weekendLiveTime = timeAverages.getAverageLiveTimeWeekend();
+        String weekendSeedingDuration = timeAverages.getAverageSeedingDurationWeekend();
+        String weekendSeedingStartTime = timeAverages.getAverageSeedingStartTimeWeekend();
+
+        return createEmbedServerInfo(name, players, status, layer, totalQueue, playTime, teamOne, teamTwo, mapImage, nextLayerNameAdjusted, squadlanes, teamOneNext, teamTwoNext, squadlanesNext, squadmaps, squadmapsNext, flag, workdayLiveTime, workdaySeedingDuration, workdaySeedingStartTime, weekendLiveTime, weekendSeedingDuration, weekendSeedingStartTime);
     }
 
-    private EmbedBuilder createEmbedServerInfo(String name, int players, String status, String layer, int totalQueue, String playTime, String teamOne, String teamTwo, String mapImage, String nextLayer, String squadlanes, String teamOneNext, String teamTwoNext, String squadlanesNext, String squadmaps, String squadmapsNext, String flag) {
+    private EmbedBuilder createEmbedServerInfo(String name, int players, String status, String layer, int totalQueue, String playTime, String teamOne, String teamTwo, String mapImage, String nextLayer, String squadlanes, String teamOneNext, String teamTwoNext, String squadlanesNext, String squadmaps, String squadmapsNext, String flag, String workdayLiveTime, String workdaySeedingDuration, String workdaySeedingStartTime, String weekendLiveTime, String weekendSeedingDuration, String weekendSeedingStartTime) {
 
         EmbedBuilder eb = new EmbedBuilder();
 
@@ -127,18 +137,25 @@ public class BattlemetricsService {
         eb.addField(":beginner: Squadlanes:", squadlanes, false);
         eb.addField(":pushpin: Squadmaps: ", squadmaps, false);
         eb.addBlankField(false);
-        eb.addField("NÄCHSTES \n MATCH", "", true);
+        eb.addField("NÄCHSTES \nMATCH", "", true);
         eb.addField(":map: Map:", nextLayer, true);
         eb.addField(":flag_white: Fraktionen:", teamOneNext + " vs " + teamTwoNext, true);
         eb.addField(":beginner: Squadlanes:", squadlanesNext, false);
         eb.addField(":pushpin: Squadmaps: ", squadmapsNext, false);
         eb.addField(":exclamation: Match-Start Benachrichtigung", "Klicke auf den Button unter der Nachricht, wenn du zu Anfang des nächsten Matches gepingt werden möchtest!", false);
+
         //eb.addBlankField(false);
+        //eb.addField("ALLGEMEINE \nINFORMATIONEN", "", true);
         //eb.addBlankField(true);
-        //eb.addField("ALLGEMEINE INFORMATIONEN", "", true);
-        //eb.addBlankField(true);
-        //eb.addField("MONTAG-FREITAG", "Im Durchschnitt geht der Server um x Uhr live.\n In der Regel dauert das Seeding x Minuten.\n Für gewöhnlich beginnt das Seeding um x Uhr.\n", false);  //TODO Allgemeine Infos implementieren
-        //eb.addField("SAMSTAG-SONNTAG", "Im Durchschnitt geht der Server um x Uhr live.\n In der Regel dauert das Seeding x Minuten.\n Für gewöhnlich beginnt das Seeding um x Uhr.\n", false);
+        //eb.addField("MONTAG-FREITAG", "Durchschnittlicher Seedingstart: **"+ workdaySeedingStartTime +" Uhr**\n" +
+         //                                           "Durchschnittliches Seedingende: **"+ workdayLiveTime +" Uhr**\n " +
+           //                                         "Durchschnittliche Seedinglänge: **"+ workdaySeedingDuration +"h**\n " +
+        //        "", false);
+        //eb.addField("SAMSTAG-SONNTAG", "Durchschnittlicher Seedingstart: **"+ weekendSeedingStartTime +" Uhr**\n" +
+          //                                          "Durchschnittliches Seedingende: **"+ weekendLiveTime +" Uhr**\n " +
+         //                                           "Durchschnittliche Seedinglänge: **"+ weekendSeedingDuration +"h**\n " +
+         //       "", false);
+
         eb.setFooter("© official DSG Bot", "https://dsg-gaming.de/images/og.jpg");
         eb.setImage(mapImage);
         eb.setTimestamp(Instant.now());
@@ -304,11 +321,12 @@ public class BattlemetricsService {
                 matchBefore.setFlag("Seeding");
             }
 
-            SimpleDateFormat dfGerman = new SimpleDateFormat("HH:mm");
+            SimpleDateFormat dfGerman = new SimpleDateFormat("dd.MM.yyyy HH:mm");
             try {
+
                 Date startDate = dfGerman.parse(matchBefore.getStartDate() + " " +matchBefore.getStartTime());
                 Date endDate = dfGerman.parse(date + " " + time);
-                Date resultDate = new Date(endDate.getTime() - startDate.getTime() + dfGerman.parse("00:00").getTime());
+                Date resultDate = new Date(endDate.getTime() - startDate.getTime() + dfGerman.parse("01.01.0000 00:00").getTime());
 
                 matchBefore.setDuration(dfGerman.format(resultDate));
             } catch (ParseException e) {
