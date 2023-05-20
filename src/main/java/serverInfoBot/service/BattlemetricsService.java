@@ -328,7 +328,7 @@ public class BattlemetricsService {
                 Date endDate = dfGerman.parse(date + " " + time);
                 Date resultDate = new Date(endDate.getTime() - startDate.getTime() + dfGerman.parse("01.01.0000 00:00").getTime());
 
-                matchBefore.setDuration(dfGerman.format(resultDate));
+                matchBefore.setDuration(dfGerman.format(resultDate).substring(11,16));
             } catch (ParseException e) {
                 e.printStackTrace();
             }
