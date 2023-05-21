@@ -144,17 +144,17 @@ public class BattlemetricsService {
         eb.addField(":pushpin: Squadmaps: ", squadmapsNext, false);
         eb.addField(":exclamation: Match-Start Benachrichtigung", "Klicke auf den Button unter der Nachricht, wenn du zu Anfang des nächsten Matches gepingt werden möchtest!", false);
 
-        //eb.addBlankField(false);
-        //eb.addField("ALLGEMEINE \nINFORMATIONEN", "", true);
-        //eb.addBlankField(true);
-        //eb.addField("MONTAG-FREITAG", "Durchschnittlicher Seedingstart: **"+ workdaySeedingStartTime +" Uhr**\n" +
-         //                                           "Durchschnittliches Seedingende: **"+ workdayLiveTime +" Uhr**\n " +
-           //                                         "Durchschnittliche Seedinglänge: **"+ workdaySeedingDuration +"h**\n " +
-        //        "", false);
-        //eb.addField("SAMSTAG-SONNTAG", "Durchschnittlicher Seedingstart: **"+ weekendSeedingStartTime +" Uhr**\n" +
-          //                                          "Durchschnittliches Seedingende: **"+ weekendLiveTime +" Uhr**\n " +
-         //                                           "Durchschnittliche Seedinglänge: **"+ weekendSeedingDuration +"h**\n " +
-         //       "", false);
+        eb.addBlankField(false);
+        eb.addField("ALLGEMEINE \nINFORMATIONEN", "", true);
+        eb.addBlankField(true);
+        eb.addField("MONTAG-FREITAG", "Durchschnittlicher Seedingstart: **"+ workdaySeedingStartTime +" Uhr**\n" +
+                                                    "Durchschnittliches Seedingende: **"+ workdayLiveTime +" Uhr**\n " +
+                                                    "Durchschnittliche Seedinglänge: **"+ workdaySeedingDuration +"h**\n " +
+                "", false);
+        eb.addField("SAMSTAG-SONNTAG", "Durchschnittlicher Seedingstart: **"+ weekendSeedingStartTime +" Uhr**\n" +
+                                                   "Durchschnittliches Seedingende: **"+ weekendLiveTime +" Uhr**\n " +
+                                                    "Durchschnittliche Seedinglänge: **"+ weekendSeedingDuration +"h**\n " +
+                "", false);
 
         eb.setFooter("© official DSG Bot", "https://dsg-gaming.de/images/og.jpg");
         eb.setImage(mapImage);

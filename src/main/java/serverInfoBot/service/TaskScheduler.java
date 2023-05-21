@@ -175,11 +175,11 @@ public class TaskScheduler {
                         try {
                             //Calculate Mo-Fr
                             List<FlagTimeInformation> workdays = new ArrayList<>();
-                            workdays.addAll(flagTimeInformationRepository.findByWeekday("Mo."));
-                            workdays.addAll(flagTimeInformationRepository.findByWeekday("Di."));
-                            workdays.addAll(flagTimeInformationRepository.findByWeekday("Mi."));
-                            workdays.addAll(flagTimeInformationRepository.findByWeekday("Do."));
-                            workdays.addAll(flagTimeInformationRepository.findByWeekday("Fr."));
+                            workdays.addAll(flagTimeInformationRepository.findByWeekday("Mon"));
+                            workdays.addAll(flagTimeInformationRepository.findByWeekday("Tue"));
+                            workdays.addAll(flagTimeInformationRepository.findByWeekday("Wed"));
+                            workdays.addAll(flagTimeInformationRepository.findByWeekday("Thur"));
+                            workdays.addAll(flagTimeInformationRepository.findByWeekday("Fri"));
 
                             List<List<String>> workdaysInformation = gatherData(workdays);
 
@@ -194,8 +194,8 @@ public class TaskScheduler {
 
                             //Calculate Sa-So
                             List<FlagTimeInformation> weekend = new ArrayList<>();
-                            weekend.addAll(flagTimeInformationRepository.findByWeekday("Sa."));
-                            weekend.addAll(flagTimeInformationRepository.findByWeekday("So."));
+                            weekend.addAll(flagTimeInformationRepository.findByWeekday("Sat"));
+                            weekend.addAll(flagTimeInformationRepository.findByWeekday("Sun"));
 
                             List<List<String>> weekendInformation = gatherData(weekend);
 
