@@ -70,6 +70,7 @@ public class BattlemetricsService {
         String name = serverInfo.getName();
         String squadmaps = layerInformation.getSquadmapsLink();
         String squadmapsNext = nextLayerInformation.getSquadmapsLink();
+        String mapName = layerInformation.getMapName();
 
         LastRequest lastRequest = lastRequestRepository.findById(1);
 
@@ -91,7 +92,7 @@ public class BattlemetricsService {
         String dateTime = fmt4.print(dt);
 
         if (mapchange) {
-            logMatches(layer, flag, date, time, dateTime);
+            logMatches(layer, flag, date, time, dateTime, mapName);
         }
 
         checkForFlagChange(lastRequest.getFlag(), flag, date, time, weekday);
@@ -295,7 +296,7 @@ public class BattlemetricsService {
         flagTimeInformationRepository.save(flagTimeInformation);
     }
 
-    private void logMatches(String layer, String flag, String date, String time, String dateTime){
+    private void logMatches(String layer, String flag, String date, String time, String dateTime, String mapName){
 
         MatchHistory matchHistory = new MatchHistory();
         matchHistory.setLayerName(layer);
@@ -303,6 +304,7 @@ public class BattlemetricsService {
         matchHistory.setStartDate(date);
         matchHistory.setStartTime(time);
         matchHistory.setDateTime(dateTime);
+        matchHistory.setMapName(mapName);
         matchHistoryRepository.save(matchHistory);
 
         MatchHistory matchBefore = matchHistoryRepository.findByDateTime(lastLoggedMatchRepository.findById(1).get().getDateTime());

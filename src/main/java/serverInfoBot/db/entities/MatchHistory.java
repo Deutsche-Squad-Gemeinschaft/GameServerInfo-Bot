@@ -24,4 +24,5 @@ public class MatchHistory {
     private String layerName;
     private String flag;
     private String dateTime;
+    private String mapName;
 }

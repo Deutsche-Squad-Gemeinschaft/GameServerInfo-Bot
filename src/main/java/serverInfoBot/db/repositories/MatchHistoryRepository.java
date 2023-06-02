@@ -11,4 +11,6 @@ public interface MatchHistoryRepository extends JpaRepository<MatchHistory, Inte
     MatchHistory findByDateTime(String dateTime);
 
     List<MatchHistory> findByStartDateAndFlag(String date, String flag);
+
+    List<MatchHistory> findByFlag(String flag);
 }
