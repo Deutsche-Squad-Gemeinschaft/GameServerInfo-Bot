@@ -316,8 +316,18 @@ public class BattlemetricsService {
             matchBefore.setEndDate(date);
             matchBefore.setEndTime(time);
 
-            if (matchBefore.getFlag().equals("Leer") && flag.equals("Live")){
+            if ((matchBefore.getFlag().equals("Leer") || matchBefore.getFlag().equals("Dead") || matchBefore.getFlag().equals("Walking Dead")) && flag.equals("Live")){
                 matchBefore.setFlag("Seeding");
+            }
+
+            if (flag.equals("Leer") && matchBefore.getFlag().equals("Live")){
+                matchBefore.setFlag("Dead");
+            }
+
+            if(flag.equals("Dead") && matchBefore.getFlag().equals("Dead")){
+                MatchHistory matchHistory1 = matchHistoryRepository.findByDateTime(dateTime);
+                matchHistory1.setFlag("Walking Dead");
+                matchHistoryRepository.save(matchHistory1);
             }
 
             SimpleDateFormat dfGerman = new SimpleDateFormat("dd.MM.yyyy HH:mm");
