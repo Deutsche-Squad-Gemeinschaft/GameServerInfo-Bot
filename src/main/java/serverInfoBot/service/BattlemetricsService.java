@@ -145,16 +145,15 @@ public class BattlemetricsService {
         eb.addField(":exclamation: Match-Start Benachrichtigung", "Klicke auf den Button unter der Nachricht, wenn du zu Anfang des nächsten Matches gepingt werden möchtest!", false);
 
         eb.addBlankField(false);
-        eb.addField("ALLGEMEINE \nINFORMATIONEN", "", true);
-        eb.addBlankField(true);
-        eb.addField("MONTAG-FREITAG", "Durchschnittlicher Seedingstart: **"+ workdaySeedingStartTime +" Uhr**\n" +
-                                                    "Durchschnittliches Seedingende: **"+ workdayLiveTime +" Uhr**\n " +
-                                                    "Durchschnittliche Seedinglänge: **"+ workdaySeedingDuration +"h**\n " +
-                "", false);
-        eb.addField("SAMSTAG-SONNTAG", "Durchschnittlicher Seedingstart: **"+ weekendSeedingStartTime +" Uhr**\n" +
-                                                   "Durchschnittliches Seedingende: **"+ weekendLiveTime +" Uhr**\n " +
-                                                    "Durchschnittliche Seedinglänge: **"+ weekendSeedingDuration +"h**\n " +
-                "", false);
+
+        eb.addField("WERKTAGS", "Seedingstart: **"+ workdaySeedingStartTime +" Uhr**\n" +
+                                                    "Seedingende: **"+ workdayLiveTime +" Uhr**\n " +
+                                                    "Seedinglänge: **"+ workdaySeedingDuration +"h**\n " +
+                "", true);
+        eb.addField("WOCHENENDE", "Seedingstart: **"+ weekendSeedingStartTime +" Uhr**\n" +
+                                                   "Seedingende: **"+ weekendLiveTime +" Uhr**\n " +
+                                                    "Seedinglänge: **"+ weekendSeedingDuration +"h**\n " +
+                "", true);
 
         eb.setFooter("© official DSG Bot", "https://dsg-gaming.de/images/og.jpg");
         eb.setImage(mapImage);

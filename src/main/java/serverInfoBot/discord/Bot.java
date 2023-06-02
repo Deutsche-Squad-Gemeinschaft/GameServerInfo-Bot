@@ -29,7 +29,7 @@ public class Bot {
         JDA jda = JDABuilder.createDefault(configuration.getBotToken())
                 .addEventListeners(eventHandler)
                 .setActivity(Activity.playing("#info"))
-                .enableIntents(GatewayIntent.GUILD_MEMBERS)
+                .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_EMOJIS_AND_STICKERS)
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
                 .build()
                 .awaitReady();
