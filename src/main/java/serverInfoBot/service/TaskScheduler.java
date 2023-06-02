@@ -239,10 +239,12 @@ public class TaskScheduler {
 
         List<Integer> workdayLiveTimesMinutes = new ArrayList<>();
         for (int i = 0; i < workdayLiveTimes.size(); i++){
-            int hours = Integer.parseInt(workdayLiveTimes.get(i).substring(0,2));
-            int minutes = Integer.parseInt(workdayLiveTimes.get(i).substring(3,5));
-            int totalMinutes = hours * 60 + minutes;
-            workdayLiveTimesMinutes.add(totalMinutes);
+            if (workdayLiveTimes.get(i) != null) {
+                int hours = Integer.parseInt(workdayLiveTimes.get(i).substring(0,2));
+                int minutes = Integer.parseInt(workdayLiveTimes.get(i).substring(3,5));
+                int totalMinutes = hours * 60 + minutes;
+                workdayLiveTimesMinutes.add(totalMinutes);
+            }
         }
         return workdayLiveTimesMinutes;
     }
