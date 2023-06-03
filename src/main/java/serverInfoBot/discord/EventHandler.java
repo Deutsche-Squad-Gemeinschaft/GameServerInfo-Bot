@@ -13,9 +13,12 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import org.springframework.stereotype.Component;
+import serverInfoBot.db.entities.CommandLog;
 import serverInfoBot.db.entities.MatchHistory;
+import serverInfoBot.db.repositories.CommandLogRepository;
 import serverInfoBot.db.repositories.FlagTimeInformationRepository;
 import serverInfoBot.db.repositories.MatchHistoryRepository;
+import serverInfoBot.service.CommandLogService;
 import serverInfoBot.service.StatisticsService;
 
 import java.awt.*;
@@ -30,6 +33,7 @@ public class EventHandler extends ListenerAdapter {
     private final MatchHistoryRepository matchHistoryRepository;
     private final FlagTimeInformationRepository flagTimeInformationRepository;
     private final StatisticsService statisticsService;
+    private final CommandLogService commandLogService;
 
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
@@ -37,6 +41,8 @@ public class EventHandler extends ListenerAdapter {
             if (!event.getMember().getRoles().contains(event.getGuild().getRoleById(event.getGuild().getRolesByName("Match-Start Notification", false).get(0).getIdLong()))) {
                 event.getGuild().addRoleToMember(event.getMember(), event.getGuild().getRoleById(event.getGuild().getRolesByName("Match-Start Notification", false).get(0).getIdLong())).queue();
                 event.reply("Du wirst nun beim Start des nächsten Matches hier im Kanal gepingt!").setEphemeral(true).queue();
+
+                commandLogService.logEvent(event.getUser().getName(), CommandLogService.EventType.MATCHNOTIFICATION);
             } else {
                 event.reply("Du wirst bereits beim Start des nächsten Matches gepingt!").setEphemeral(true).queue();
             }
@@ -88,6 +94,8 @@ public class EventHandler extends ListenerAdapter {
 
             event.replyEmbeds(eb.build()).setEphemeral(true).queue();
 
+            commandLogService.logEvent(event.getUser().getName(), CommandLogService.EventType.VORHERIGEMATCHES);
+
         } else if (event.getName().equals("cia")) {
             int trackedDays = flagTimeInformationRepository.findAll().size();
             int trackedLiveMatches = matchHistoryRepository.findByFlag("Live").size();
@@ -106,6 +114,8 @@ public class EventHandler extends ListenerAdapter {
             eb.setTimestamp(Instant.now());
 
             event.replyEmbeds(eb.build()).setEphemeral(true).queue();
+
+            commandLogService.logEvent(event.getUser().getName(), CommandLogService.EventType.CIA);
 
         } else if (event.getName().equals("map-statistiken")) {
 
@@ -134,6 +144,8 @@ public class EventHandler extends ListenerAdapter {
 
             event.replyEmbeds(eb.build()).setEphemeral(true).queue();
 
+            commandLogService.logEvent(event.getUser().getName(), CommandLogService.EventType.MAPSTATISTICS);
+
         } else if (event.getName().equals("layer-statistiken")) {
 
             OptionMapping daysOption = event.getOption("tage");
@@ -159,6 +171,8 @@ public class EventHandler extends ListenerAdapter {
                 embeds.add(eb.build());
             }
             event.getInteraction().replyEmbeds(embeds).setEphemeral(true).queue();
+
+            commandLogService.logEvent(event.getUser().getName(), CommandLogService.EventType.LAYERSTATISTICS);
 
         }else if (event.getName().equals("gamemode-statistiken")) {
             OptionMapping daysOption = event.getOption("tage");
@@ -186,6 +200,7 @@ public class EventHandler extends ListenerAdapter {
 
             event.replyEmbeds(eb.build()).setEphemeral(true).queue();
 
+            commandLogService.logEvent(event.getUser().getName(), CommandLogService.EventType.GAMEMODESTATISTICS);
         }
     }
 
