@@ -149,11 +149,18 @@ public class EventHandler extends ListenerAdapter {
         } else if (event.getName().equals("layer-statistiken")) {
 
             OptionMapping daysOption = event.getOption("tage");
+            OptionMapping sortOption = event.getOption("sortierung");
+
+            boolean sort = false;
+
+            if (sortOption != null){
+                sort = sortOption.getAsBoolean();
+            }
 
             assert daysOption != null;
             int days = daysOption.getAsInt() + 1;
 
-            ArrayList<String> layerStatisticsList = statisticsService.getLayerStatistics(statisticsService.getDates(days));
+            ArrayList<String> layerStatisticsList = statisticsService.getLayerStatistics(statisticsService.getDates(days), sort);
             List<MessageEmbed> embeds = new ArrayList<>();
 
             for (int i = 0; i < layerStatisticsList.size(); i++) {
@@ -223,7 +230,9 @@ public class EventHandler extends ListenerAdapter {
 
         commandData.add(Commands.slash("layer-statistiken", "Bekomme eine Statistik wie oft welche Live-Layer gespielt wurden in den letzten x Tagen")
                 .addOptions(
-                        new OptionData(OptionType.INTEGER, "tage", "Die Anzahl der vergangenen Tage zu denen die Statistik erstellt werden soll", true).setMinValue(1).setMaxValue(14)));
+                        new OptionData(OptionType.INTEGER, "tage", "Die Anzahl der vergangenen Tage zu denen die Statistik erstellt werden soll", true).setMinValue(1).setMaxValue(14),
+                        new OptionData(OptionType.BOOLEAN, "sortierung", "Sollen die Layer nach Häufigkeit sortiert werden?", false))
+                );
 
         commandData.add(Commands.slash("gamemode-statistiken", "Bekomme eine Statistik wie oft welcher Live-Gamemode gespielt wurden in den letzten x Tagen")
                 .addOptions(

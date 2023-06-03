@@ -44,7 +44,7 @@ public class StatisticsService {
         return mapStatistics;
     }
 
-    public ArrayList<String> getLayerStatistics(List<String> dates) {
+    public ArrayList<String> getLayerStatistics(List<String> dates, boolean sort) {
         List<MatchHistory> matchHistories = new ArrayList<>();
 
         for (int i = 0; i < dates.size(); i++) {
@@ -56,28 +56,56 @@ public class StatisticsService {
 
         String layerStatistics = "";
 
-        TreeMap<String, Integer> orderedMap = new TreeMap<>(countedLayer);
+        if (sort) {
 
-        ArrayList<String> layerStatisticsList = new ArrayList<>();
-        int i = 0;
+            Map<String, Integer> sortedMapAsc = sortByComparator(countedLayer, false);
 
-        for (String layerName : orderedMap.keySet()) {
+            ArrayList<String> layerStatisticsList = new ArrayList<>();
+            int i = 0;
 
-            int counter = orderedMap.get(layerName);
-            layerStatistics = layerStatistics.concat("**" + layerName + ":** ...." + counter + "\n\n");
+            for (Map.Entry<String, Integer> entry : sortedMapAsc.entrySet()) {
 
-            if (layerStatistics.length() > 3500) {
-                layerStatisticsList.add(i, layerStatistics);
-                i = i + 1;
-                layerStatistics = "";
+                int counter = entry.getValue();
+                String layerName = entry.getKey();
+                layerStatistics = layerStatistics.concat("**" + layerName + ":** ...." + counter + "\n\n");
+
+                if (layerStatistics.length() > 3500) {
+                    layerStatisticsList.add(i, layerStatistics);
+                    i = i + 1;
+                    layerStatistics = "";
+                }
             }
-        }
 
-        if (layerStatisticsList.size() == 0) {
-            layerStatisticsList.add(layerStatistics);
-        }
+            if (layerStatisticsList.size() == 0) {
+                layerStatisticsList.add(layerStatistics);
+            }
 
-        return layerStatisticsList;
+            return layerStatisticsList;
+
+        } else {
+            TreeMap<String, Integer> orderedMap = new TreeMap<>(countedLayer);
+
+            ArrayList<String> layerStatisticsList = new ArrayList<>();
+            int i = 0;
+
+            for (String layerName : orderedMap.keySet()) {
+
+                int counter = orderedMap.get(layerName);
+                layerStatistics = layerStatistics.concat("**" + layerName + ":** ...." + counter + "\n\n");
+
+                if (layerStatistics.length() > 3500) {
+                    layerStatisticsList.add(i, layerStatistics);
+                    i = i + 1;
+                    layerStatistics = "";
+                }
+            }
+
+            if (layerStatisticsList.size() == 0) {
+                layerStatisticsList.add(layerStatistics);
+            }
+
+            return layerStatisticsList;
+        }
     }
 
     public String getGamemodeStatistics(List<String> dates) {
