@@ -30,13 +30,14 @@ public class StatisticsService {
 
         HashMap<String, Integer> countedMaps = countMaps(matchHistories);
 
+        Map<String, Integer> sortedMapAsc = sortByComparator(countedMaps, false);
+
         String mapStatistics = "";
 
-        TreeMap<String, Integer> orderedMap = new TreeMap<>(countedMaps);
+        for (Map.Entry<String, Integer> entry : sortedMapAsc.entrySet()) {
 
-        for (String mapName : orderedMap.keySet()) {
-
-            int counter = orderedMap.get(mapName);
+            int counter = entry.getValue();
+            String mapName = entry.getKey();
             mapStatistics = mapStatistics.concat("**" + mapName + ":** ...." + counter + "\n\n");
         }
 
@@ -89,13 +90,14 @@ public class StatisticsService {
 
         HashMap<String, Integer> countedGamemode = countGamemode(matchHistories);
 
+        Map<String, Integer> sortedMapAsc = sortByComparator(countedGamemode, false);
+
         String gamemodeStatistics = "";
 
-        TreeMap<String, Integer> orderedMap = new TreeMap<>(countedGamemode);
+        for (Map.Entry<String, Integer> entry : sortedMapAsc.entrySet()) {
 
-        for (String gamemodeName : orderedMap.keySet()) {
-
-            int counter = orderedMap.get(gamemodeName);
+            int counter = entry.getValue();
+            String gamemodeName = entry.getKey();
             gamemodeStatistics = gamemodeStatistics.concat("**" + gamemodeName + ":** ...." + counter + "\n\n");
         }
 
@@ -181,5 +183,37 @@ public class StatisticsService {
             }
         }
         return countedGamemode;
+    }
+
+    private Map<String, Integer> sortByComparator(Map<String, Integer> unsortMap, final boolean order)
+    {
+
+        List<Map.Entry<String, Integer>> list = new LinkedList<Map.Entry<String, Integer>>(unsortMap.entrySet());
+
+        // Sorting the list based on values
+        Collections.sort(list, new Comparator<Map.Entry<String, Integer>>()
+        {
+            public int compare(Map.Entry<String, Integer> o1,
+                               Map.Entry<String, Integer> o2)
+            {
+                if (order)
+                {
+                    return o1.getValue().compareTo(o2.getValue());
+                }
+                else
+                {
+                    return o2.getValue().compareTo(o1.getValue());
+                }
+            }
+        });
+
+        // Maintaining insertion order with the help of LinkedList
+        Map<String, Integer> sortedMap = new LinkedHashMap<String, Integer>();
+        for (Map.Entry<String, Integer> entry : list)
+        {
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+
+        return sortedMap;
     }
 }
