@@ -127,6 +127,11 @@ public class EventHandler extends ListenerAdapter {
             eb.setFooter("© official DSG Bot", "https://dsg-gaming.de/images/og.jpg");
             eb.setTimestamp(Instant.now());
 
+            if (mapStatistics.length() == 0) {
+                event.reply("Zu diesen Tagen habe ich leider keine Daten.").setEphemeral(true).queue();
+                return;
+            }
+
             event.replyEmbeds(eb.build()).setEphemeral(true).queue();
 
         } else if (event.getName().equals("layer-statistiken")) {
@@ -173,6 +178,11 @@ public class EventHandler extends ListenerAdapter {
 
             eb.setFooter("© official DSG Bot", "https://dsg-gaming.de/images/og.jpg");
             eb.setTimestamp(Instant.now());
+
+            if (gamemodeStatistics.length() == 0) {
+                event.reply("Zu diesen Tagen habe ich leider keine Daten.").setEphemeral(true).queue();
+                return;
+            }
 
             event.replyEmbeds(eb.build()).setEphemeral(true).queue();
 
