@@ -112,17 +112,17 @@ public class EventHandler extends ListenerAdapter {
             OptionMapping daysOption = event.getOption("tage");
 
             assert daysOption != null;
-            int days = daysOption.getAsInt();
+            int days = daysOption.getAsInt() + 1;
 
             String mapStatistics = statisticsService.getMapStatistics(statisticsService.getDates(days));
 
             EmbedBuilder eb = new EmbedBuilder();
 
-            eb.setTitle("Map Statistiken der letzten " + days + " Tage", null);
+            eb.setTitle("Map Statistiken der letzten " + (days-1) + " Tage", null);
 
             eb.setColor(new Color(255, 196, 12));
 
-            eb.setDescription("Es werden ausschließlich Maps mit gespielten Live-Runden gezählt. Maps, die nicht aufgelistet sind, wurden in den letzten " + days + " Tagen nicht in Live-Runden gespielt. \n\n" + mapStatistics);
+            eb.setDescription("Es werden ausschließlich Maps mit gespielten Live-Runden gezählt. Maps, die nicht aufgelistet sind, wurden in den letzten " + (days-1) + " Tagen nicht in Live-Runden gespielt. \n\n" + mapStatistics);
 
             eb.setFooter("© official DSG Bot", "https://dsg-gaming.de/images/og.jpg");
             eb.setTimestamp(Instant.now());
@@ -134,7 +134,7 @@ public class EventHandler extends ListenerAdapter {
             OptionMapping daysOption = event.getOption("tage");
 
             assert daysOption != null;
-            int days = daysOption.getAsInt();
+            int days = daysOption.getAsInt() + 1;
 
             ArrayList<String> layerStatisticsList = statisticsService.getLayerStatistics(statisticsService.getDates(days));
             List<MessageEmbed> embeds = new ArrayList<>();
@@ -142,11 +142,11 @@ public class EventHandler extends ListenerAdapter {
             for (int i = 0; i < layerStatisticsList.size(); i++) {
                 EmbedBuilder eb = new EmbedBuilder();
 
-                eb.setTitle("Layer Statistiken der letzten " + days + " Tage (Nachricht "+ (i +1) + " von " + layerStatisticsList.size() + ")", null);
+                eb.setTitle("Layer Statistiken der letzten " + (days-1) + " Tage (Nachricht "+ (i +1) + " von " + layerStatisticsList.size() + ")", null);
 
                 eb.setColor(new Color(255, 196, 12));
 
-                eb.setDescription("Es werden ausschließlich Layer mit gespielten Live-Runden gezählt. Layer, die nicht aufgelistet sind, wurden in den letzten " + days + " Tagen nicht in Live-Runden gespielt. \n\n" + layerStatisticsList.get(i));
+                eb.setDescription("Es werden ausschließlich Layer mit gespielten Live-Runden gezählt. Layer, die nicht aufgelistet sind, wurden in den letzten " + (days-1) + " Tagen nicht in Live-Runden gespielt. \n\n" + layerStatisticsList.get(i));
 
                 eb.setFooter("© official DSG Bot", "https://dsg-gaming.de/images/og.jpg");
                 eb.setTimestamp(Instant.now());
@@ -159,17 +159,17 @@ public class EventHandler extends ListenerAdapter {
             OptionMapping daysOption = event.getOption("tage");
 
             assert daysOption != null;
-            int days = daysOption.getAsInt();
+            int days = daysOption.getAsInt() + 1;
 
             String gamemodeStatistics = statisticsService.getGamemodeStatistics(statisticsService.getDates(days));
 
             EmbedBuilder eb = new EmbedBuilder();
 
-            eb.setTitle("Gamemode Statistiken der letzten " + days + " Tage", null);
+            eb.setTitle("Gamemode Statistiken der letzten " + (days-1) + " Tage", null);
 
             eb.setColor(new Color(255, 196, 12));
 
-            eb.setDescription("Es werden ausschließlich Gamemodi zu gespielten Live-Runden gezählt. \n\n" + gamemodeStatistics);
+            eb.setDescription("Es werden ausschließlich Gamemodi zu gespielten Live-Runden gezählt. Gamemodi, die nicht aufgelistet sind, wurden in den letzten " + (days-1) + " Tagen nicht in Live-Runden gespielt. \n\n" + gamemodeStatistics);
 
             eb.setFooter("© official DSG Bot", "https://dsg-gaming.de/images/og.jpg");
             eb.setTimestamp(Instant.now());
