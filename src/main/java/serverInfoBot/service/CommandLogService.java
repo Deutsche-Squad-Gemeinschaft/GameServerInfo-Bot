@@ -23,7 +23,7 @@ public class CommandLogService {
         LAYERSTATISTICS
     }
 
-    public void logEvent(String userName, EventType event){
+    public void logEvent(String userName, EventType event, String eventDays){
         CommandLog commandLog = new CommandLog();
 
         commandLog.setUserName(userName);
@@ -37,6 +37,7 @@ public class CommandLogService {
         String dateTime = fmt.print(dt);
 
         commandLog.setDateTime(dateTime);
+        commandLog.setEventDays(eventDays);
 
         commandLogRepository.save(commandLog);
     }

@@ -18,4 +18,5 @@ public class CommandLog {
     private String userName;
     private String dateTime;
     private String event;
+    private String eventDays;
 }

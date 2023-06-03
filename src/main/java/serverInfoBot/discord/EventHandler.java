@@ -42,7 +42,7 @@ public class EventHandler extends ListenerAdapter {
                 event.getGuild().addRoleToMember(event.getMember(), event.getGuild().getRoleById(event.getGuild().getRolesByName("Match-Start Notification", false).get(0).getIdLong())).queue();
                 event.reply("Du wirst nun beim Start des nächsten Matches hier im Kanal gepingt!").setEphemeral(true).queue();
 
-                commandLogService.logEvent(event.getUser().getName(), CommandLogService.EventType.MATCHNOTIFICATION);
+                commandLogService.logEvent(event.getUser().getName(), CommandLogService.EventType.MATCHNOTIFICATION, "-");
             } else {
                 event.reply("Du wirst bereits beim Start des nächsten Matches gepingt!").setEphemeral(true).queue();
             }
@@ -94,7 +94,7 @@ public class EventHandler extends ListenerAdapter {
 
             event.replyEmbeds(eb.build()).setEphemeral(true).queue();
 
-            commandLogService.logEvent(event.getUser().getName(), CommandLogService.EventType.VORHERIGEMATCHES);
+            commandLogService.logEvent(event.getUser().getName(), CommandLogService.EventType.VORHERIGEMATCHES, date);
 
         } else if (event.getName().equals("cia")) {
             int trackedDays = flagTimeInformationRepository.findAll().size();
@@ -115,7 +115,7 @@ public class EventHandler extends ListenerAdapter {
 
             event.replyEmbeds(eb.build()).setEphemeral(true).queue();
 
-            commandLogService.logEvent(event.getUser().getName(), CommandLogService.EventType.CIA);
+            commandLogService.logEvent(event.getUser().getName(), CommandLogService.EventType.CIA, "-");
 
         } else if (event.getName().equals("map-statistiken")) {
 
@@ -144,7 +144,7 @@ public class EventHandler extends ListenerAdapter {
 
             event.replyEmbeds(eb.build()).setEphemeral(true).queue();
 
-            commandLogService.logEvent(event.getUser().getName(), CommandLogService.EventType.MAPSTATISTICS);
+            commandLogService.logEvent(event.getUser().getName(), CommandLogService.EventType.MAPSTATISTICS, String.valueOf(days));
 
         } else if (event.getName().equals("layer-statistiken")) {
 
@@ -172,7 +172,7 @@ public class EventHandler extends ListenerAdapter {
             }
             event.getInteraction().replyEmbeds(embeds).setEphemeral(true).queue();
 
-            commandLogService.logEvent(event.getUser().getName(), CommandLogService.EventType.LAYERSTATISTICS);
+            commandLogService.logEvent(event.getUser().getName(), CommandLogService.EventType.LAYERSTATISTICS, String.valueOf(days));
 
         }else if (event.getName().equals("gamemode-statistiken")) {
             OptionMapping daysOption = event.getOption("tage");
@@ -200,7 +200,7 @@ public class EventHandler extends ListenerAdapter {
 
             event.replyEmbeds(eb.build()).setEphemeral(true).queue();
 
-            commandLogService.logEvent(event.getUser().getName(), CommandLogService.EventType.GAMEMODESTATISTICS);
+            commandLogService.logEvent(event.getUser().getName(), CommandLogService.EventType.GAMEMODESTATISTICS, String.valueOf(days));
         }
     }
 
