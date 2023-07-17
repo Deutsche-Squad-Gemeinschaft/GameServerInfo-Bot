@@ -226,17 +226,17 @@ public class EventHandler extends ListenerAdapter {
 
         commandData.add(Commands.slash("map-statistiken", "Bekomme eine Statistik wie oft welche Live-Map gespielt wurde in den letzten x Tagen")
                 .addOptions(
-                        new OptionData(OptionType.INTEGER, "tage", "Die Anzahl der vergangenen Tage zu denen die Statistik erstellt werden soll", true).setMinValue(1).setMaxValue(14)));
+                        new OptionData(OptionType.INTEGER, "tage", "Die Anzahl der vergangenen Tage zu denen die Statistik erstellt werden soll", true).setMinValue(1).setMaxValue(30)));
 
         commandData.add(Commands.slash("layer-statistiken", "Bekomme eine Statistik wie oft welche Live-Layer gespielt wurden in den letzten x Tagen")
                 .addOptions(
-                        new OptionData(OptionType.INTEGER, "tage", "Die Anzahl der vergangenen Tage zu denen die Statistik erstellt werden soll", true).setMinValue(1).setMaxValue(14),
+                        new OptionData(OptionType.INTEGER, "tage", "Die Anzahl der vergangenen Tage zu denen die Statistik erstellt werden soll", true).setMinValue(1).setMaxValue(30),
                         new OptionData(OptionType.BOOLEAN, "sortierung", "Sollen die Layer nach Häufigkeit sortiert werden?", false))
                 );
 
         commandData.add(Commands.slash("gamemode-statistiken", "Bekomme eine Statistik wie oft welcher Live-Gamemode gespielt wurden in den letzten x Tagen")
                 .addOptions(
-                        new OptionData(OptionType.INTEGER, "tage", "Die Anzahl der vergangenen Tage zu denen die Statistik erstellt werden soll", true).setMinValue(1).setMaxValue(14)));
+                        new OptionData(OptionType.INTEGER, "tage", "Die Anzahl der vergangenen Tage zu denen die Statistik erstellt werden soll", true).setMinValue(1).setMaxValue(30)));
 
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }
