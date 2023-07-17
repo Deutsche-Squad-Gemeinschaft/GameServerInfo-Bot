@@ -323,7 +323,11 @@ public class BattlemetricsService {
             matchBefore.setEndTime(time);
 
             if ((matchBefore.getFlag().equals("Leer") || matchBefore.getFlag().equals("Dead") || matchBefore.getFlag().equals("Walking Dead")) && flag.equals("Live")){
-                matchBefore.setFlag("Seeding");
+                if (matchBefore.getLayerName().contains("Seed") || matchBefore.getLayerName().contains("Skirmish")){
+                    matchBefore.setFlag("Seeding");
+                } else {
+                    matchBefore.setFlag("Live");
+                }
             }
 
             if (flag.equals("Leer") && matchBefore.getFlag().equals("Live")){
