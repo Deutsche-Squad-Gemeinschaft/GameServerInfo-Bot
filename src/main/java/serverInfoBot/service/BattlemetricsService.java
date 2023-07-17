@@ -167,10 +167,12 @@ public class BattlemetricsService {
     }
 
     private String parsePlayTime(int playTime) {
+
         return String.format("%02d:%02d:%02d", playTime / 3600, (playTime % 3600) / 60, (playTime % 60));
     }
 
     private String parseTeamName(String teamName) {
+
         List<Factions> factions = factionsRepository.findAll();
         teamName = teamName.toUpperCase();
 
@@ -201,6 +203,7 @@ public class BattlemetricsService {
     }
 
     private boolean checkForMapchange(String oldLayer, String newLayer) {
+
         if (!oldLayer.equals(newLayer)) {
             Settings settings = settingsRepository.findById(1);
             JDA jda = bot.getJda();
@@ -244,16 +247,17 @@ public class BattlemetricsService {
     }
 
     private String checkForFlag(int players, String layer) {
+
         if (players <= 2) {
             return "Leer";
         }
         if (players <= 50 && (layer.contains("Skirmish") || layer.contains("Seed"))) {
             return "Seeding";
         }
-        if (players > 50 && (!layer.contains("Skirmish") || !layer.contains("Seed"))) {
+        if (players > 50) {
             return "Live";
         }
-        if (players < 50 && (!layer.contains("Skirmish") || !layer.contains("Seed"))) {
+        if (players <= 50 && (!layer.contains("Skirmish") || !layer.contains("Seed"))) {
             return "Dead";
         }
         return "Unknown";
@@ -272,11 +276,11 @@ public class BattlemetricsService {
 
         flagTimeInformation = flagTimeInformationRepository.findByDate(date);
 
-        if (oldFlag.equals("Leer") && newFlag.equals("Seeding")){
+        if (oldFlag.equals("Leer") && newFlag.equals("Seeding") && flagTimeInformation.getSeedingStartTime() == null){
             flagTimeInformation.setSeedingStartTime(time);
         }
 
-        if (oldFlag.equals("Seeding") && newFlag.equals("Live")) {
+        if ((oldFlag.equals("Seeding") || oldFlag.equals("Dead")) && newFlag.equals("Live") && flagTimeInformation.getLiveTime() == null) {
             flagTimeInformation.setLiveTime(time);
             String seedingStartTime = flagTimeInformation.getSeedingStartTime();
 
