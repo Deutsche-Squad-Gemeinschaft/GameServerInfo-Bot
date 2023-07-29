@@ -5,7 +5,7 @@ In addition, the user can get notified if a new match starts.
 
 Furthermore, the user can use slash-commands to gain statistics about what gamemodes, maps and layer were played recently.
 
-*The font used for map images is "Roboto Condensed".*
+*The font used for map images is "Roboto Condensed - Bold".*
 
 ### This bot uses information provided by 
 
