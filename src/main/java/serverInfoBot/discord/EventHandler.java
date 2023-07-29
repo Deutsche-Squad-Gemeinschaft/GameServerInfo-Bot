@@ -13,9 +13,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import org.springframework.stereotype.Component;
-import serverInfoBot.db.entities.CommandLog;
 import serverInfoBot.db.entities.MatchHistory;
-import serverInfoBot.db.repositories.CommandLogRepository;
 import serverInfoBot.db.repositories.FlagTimeInformationRepository;
 import serverInfoBot.db.repositories.MatchHistoryRepository;
 import serverInfoBot.service.CommandLogService;
@@ -25,6 +23,7 @@ import java.awt.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -38,8 +37,8 @@ public class EventHandler extends ListenerAdapter {
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
         if (event.getComponentId().equals("Match-Start Benachrichtigung")) {
-            if (!event.getMember().getRoles().contains(event.getGuild().getRoleById(event.getGuild().getRolesByName("Match-Start Notification", false).get(0).getIdLong()))) {
-                event.getGuild().addRoleToMember(event.getMember(), event.getGuild().getRoleById(event.getGuild().getRolesByName("Match-Start Notification", false).get(0).getIdLong())).queue();
+            if (!Objects.requireNonNull(event.getMember()).getRoles().contains(Objects.requireNonNull(event.getGuild()).getRoleById(event.getGuild().getRolesByName("Match-Start Notification", false).get(0).getIdLong()))) {
+                event.getGuild().addRoleToMember(event.getMember(), Objects.requireNonNull(event.getGuild().getRoleById(event.getGuild().getRolesByName("Match-Start Notification", false).get(0).getIdLong()))).queue();
                 event.reply("Du wirst nun beim Start des nächsten Matches hier im Kanal gepingt!").setEphemeral(true).queue();
 
                 commandLogService.logEvent(event.getUser().getName(), CommandLogService.EventType.MATCHNOTIFICATION, "-");
@@ -245,9 +244,7 @@ public class EventHandler extends ListenerAdapter {
         if (date.length() == 10) {
             if (Integer.parseInt(date.substring(0, 2)) < 32 && Integer.parseInt(date.substring(0, 2)) > 0) {
                 if (Integer.parseInt(date.substring(3, 5)) < 13 && Integer.parseInt(date.substring(3, 5)) > 0) {
-                    if (Integer.parseInt(date.substring(6, 10)) > 2020) {
-                        return true;
-                    }
+                    return Integer.parseInt(date.substring(6, 10)) > 2020;
                 }
             }
         }

@@ -1,13 +1,15 @@
 package serverInfoBot;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import net.dv8tion.jda.api.JDA;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import serverInfoBot.service.StartService;
+import serverInfoBot.discord.Bot;
+import serverInfoBot.service.TaskScheduler;
 
 
 @Configuration
@@ -16,15 +18,18 @@ import serverInfoBot.service.StartService;
 @EnableAutoConfiguration(exclude = {WebMvcAutoConfiguration.class})
 public class ServerInfoBotApplication {
 
-	private static StartService startService;
-
-	@Autowired
-	public ServerInfoBotApplication(StartService startService) {
-		ServerInfoBotApplication.startService = startService;
+	public ServerInfoBotApplication() {
 	}
 
 	public static void main(String[] args) throws InterruptedException {
-		SpringApplication.run(ServerInfoBotApplication.class, args);
-		startService.start();
+		ApplicationContext applicationContext = SpringApplication.run(ServerInfoBotApplication.class, args);
+
+		Bot bot = applicationContext.getBean(Bot.class);
+		TaskScheduler taskScheduler = applicationContext.getBean(TaskScheduler.class);
+
+		JDA jda = bot.startBot();
+		taskScheduler.startScheduleTaskNextLayer();
+		taskScheduler.startScheduleTask(jda);
+		taskScheduler.updateFlagTimeInformationInPanel();
 	}
 }

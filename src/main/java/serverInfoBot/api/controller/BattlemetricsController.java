@@ -2,7 +2,6 @@ package serverInfoBot.api.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -25,7 +24,7 @@ public class BattlemetricsController {
         headers.set("Authorization", configuration.getBattlemetricsApiToken());
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         String resourceURL = "https://api.battlemetrics.com/servers/3219649";
-        HttpEntity<String> entity = new HttpEntity<String>(headers);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
         ResponseEntity<String> response = restTemplate.exchange(resourceURL, HttpMethod.GET, entity, String.class);
 
         String data = response.getBody();
