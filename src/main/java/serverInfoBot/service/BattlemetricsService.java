@@ -25,7 +25,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.Period;
 import java.util.Date;
 import java.util.List;
 
@@ -97,6 +96,8 @@ public class BattlemetricsService {
 
         checkForFlagChange(lastRequest.getFlag(), flag, date, time, weekday);
 
+        checkForSeedingCancellation(players, date);
+
         lastRequest.setDate(date);
         lastRequest.setTime(time);
         lastRequest.setFlag(flag);
@@ -118,10 +119,10 @@ public class BattlemetricsService {
         String weekendSeedingDuration = timeAverages.getAverageSeedingDurationWeekend();
         String weekendSeedingStartTime = timeAverages.getAverageSeedingStartTimeWeekend();
 
-        return createEmbedServerInfo(name, players, status, layer, totalQueue, playTime, teamOne, teamTwo, mapImage, nextLayerNameAdjusted, squadlanes, teamOneNext, teamTwoNext, squadlanesNext, squadmaps, squadmapsNext, flag, workdayLiveTime, workdaySeedingDuration, workdaySeedingStartTime, weekendLiveTime, weekendSeedingDuration, weekendSeedingStartTime);
+        return createEmbedServerInfo(name, players, status, layer, totalQueue, playTime, teamOne, teamTwo, mapImage, nextLayerNameAdjusted, squadlanes, teamOneNext, teamTwoNext, squadlanesNext, squadmaps, squadmapsNext, workdayLiveTime, workdaySeedingDuration, workdaySeedingStartTime, weekendLiveTime, weekendSeedingDuration, weekendSeedingStartTime);
     }
 
-    private EmbedBuilder createEmbedServerInfo(String name, int players, String status, String layer, int totalQueue, String playTime, String teamOne, String teamTwo, String mapImage, String nextLayer, String squadlanes, String teamOneNext, String teamTwoNext, String squadlanesNext, String squadmaps, String squadmapsNext, String flag, String workdayLiveTime, String workdaySeedingDuration, String workdaySeedingStartTime, String weekendLiveTime, String weekendSeedingDuration, String weekendSeedingStartTime) {
+    private EmbedBuilder createEmbedServerInfo(String name, int players, String status, String layer, int totalQueue, String playTime, String teamOne, String teamTwo, String mapImage, String nextLayer, String squadlanes, String teamOneNext, String teamTwoNext, String squadlanesNext, String squadmaps, String squadmapsNext, String workdayLiveTime, String workdaySeedingDuration, String workdaySeedingStartTime, String weekendLiveTime, String weekendSeedingDuration, String weekendSeedingStartTime) {
 
         EmbedBuilder eb = new EmbedBuilder();
 
@@ -131,8 +132,7 @@ public class BattlemetricsService {
         eb.addField(":flag_de: Status:", status, true);
         eb.addField(":busts_in_silhouette: Spielerzahl:", players + " +" + totalQueue + " in Queue", true);
         eb.addField(":map: Map:", layer, true);
-        // eb.addField(":globe_with_meridians: Zustand:", flag, true);
-        eb.addBlankField(true); //Delete if flag gets displayed
+        eb.addBlankField(true);
         eb.addField(":clock10: Rundenzeit:", playTime, true);
         eb.addField(":flag_white: Fraktionen:", teamOne + " vs " + teamTwo, true);
         eb.addField(":beginner: Squadlanes:", squadlanes, false);
@@ -149,12 +149,10 @@ public class BattlemetricsService {
 
         eb.addField("WERKTAGS", "Seedingstart: **"+ workdaySeedingStartTime +" Uhr**\n" +
                                                     "Seedingende: **"+ workdayLiveTime +" Uhr**\n " +
-                                                    "Seedinglänge: **"+ workdaySeedingDuration +"h**\n " +
-                "", true);
+                                                    "Seedinglänge: **"+ workdaySeedingDuration +"h**\n ", true);
         eb.addField("WOCHENENDE", "Seedingstart: **"+ weekendSeedingStartTime +" Uhr**\n" +
                                                    "Seedingende: **"+ weekendLiveTime +" Uhr**\n " +
-                                                    "Seedinglänge: **"+ weekendSeedingDuration +"h**\n " +
-                "", true);
+                                                    "Seedinglänge: **"+ weekendSeedingDuration +"h**\n ", true);
 
         eb.setFooter("© official DSG Bot", "https://dsg-gaming.de/images/og.jpg");
         eb.setImage(mapImage);
@@ -291,13 +289,24 @@ public class BattlemetricsService {
                 Date endDate = dfGerman.parse(time);
                 Date resultDate = new Date(endDate.getTime() - startDate.getTime() + dfGerman.parse("00:00").getTime());
 
-                flagTimeInformation.setSeedingDuration(dfGerman.format(resultDate));;
+                flagTimeInformation.setSeedingDuration(dfGerman.format(resultDate));
 
             } catch (ParseException e) {
                 e.printStackTrace();
             }
         }
         flagTimeInformationRepository.save(flagTimeInformation);
+    }
+
+    private void checkForSeedingCancellation(int players, String date){
+
+        if(players < 3){
+            FlagTimeInformation flagTimeInformation = flagTimeInformationRepository.findByDate(date);
+            if(flagTimeInformation.getSeedingStartTime()!= null && flagTimeInformation.getLiveTime() == null){
+                flagTimeInformation.setSeedingStartTime(null);
+                flagTimeInformationRepository.save(flagTimeInformation);
+            }
+        }
     }
 
     private void logMatches(String layer, String flag, String date, String time, String dateTime, String mapName){
@@ -321,6 +330,10 @@ public class BattlemetricsService {
         if (matchBefore != null){
             matchBefore.setEndDate(date);
             matchBefore.setEndTime(time);
+
+            if (flag.equals("Dead") && matchBefore.getFlag().equals("Leer")){
+                matchBefore.setFlag("Seeding");
+            }
 
             if ((matchBefore.getFlag().equals("Leer") || matchBefore.getFlag().equals("Dead") || matchBefore.getFlag().equals("Walking Dead")) && flag.equals("Live")){
                 if (matchBefore.getLayerName().contains("Seed") || matchBefore.getLayerName().contains("Skirmish")){
