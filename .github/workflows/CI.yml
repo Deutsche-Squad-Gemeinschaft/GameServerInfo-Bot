@@ -67,5 +67,5 @@ jobs:
           context: .
           file: docker/Dockerfile
           tags: |
-            ghcr.io/gameserver-info-bot/app:latest
-            ghcr.io/gameserver-info-bot/app:${{ github.sha }}    
+            ghcr.io/Deutsche-Squad-Gemeinschaft/gameserver-info-bot/app:latest
+            ghcr.io/Deutsche-Squad-Gemeinschaft/gameserver-info-bot/app:${{ github.sha }}    
