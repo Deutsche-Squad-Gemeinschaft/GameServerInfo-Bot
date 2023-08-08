@@ -48,22 +48,22 @@ jobs:
         uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2      
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}    
 
       - name: Build
         id: docker_build
         uses: docker/build-push-action@v3
         with:
-          push: false
-          tags: dsg/gameserverinfo-bot:latest
-          file: docker/Dockerfile
+          push: true
           context: .
-
-      - name: Image digest
-        run: echo ${{ steps.docker_build.outputs.digest }}
-
-#  push:
-#    runs-on: ubuntu-latest
-#    depends-on: build
-#    steps:
-    
+          file: docker/Dockerfile
+          tags: |
+            ghcr.io/${{ github.repository }}/app:latest
+            ghcr.io/${{ github.repository }}/app:${{ github.sha }}    
