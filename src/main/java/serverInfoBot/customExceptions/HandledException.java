@@ -13,9 +13,4 @@ public class HandledException extends Exception{
         super(message);
         this.setCode(code);
     }
-
-    public HandledException(String code, String message, Throwable cause) {
-        super(message, cause);
-        this.setCode(code);
-    }
 }
