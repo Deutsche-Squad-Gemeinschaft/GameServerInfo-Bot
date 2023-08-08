@@ -1,8 +1,6 @@
 name: CI
 
-on:
-  pull_request:
-  push:
+on: push
 
 jobs:
   bot:
@@ -33,6 +31,7 @@ jobs:
 
   docker:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     needs: bot
     steps:
     
