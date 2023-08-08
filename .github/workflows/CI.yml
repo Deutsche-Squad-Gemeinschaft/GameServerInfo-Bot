@@ -64,5 +64,5 @@ jobs:
           context: .
           file: docker/Dockerfile
           tags: |
-            ghcr.io/${{ github.repository }}/app:latest
-            ghcr.io/${{ github.repository }}/app:${{ github.sha }}    
+            ghcr.io/${{ github.repository | lower }}/app:latest
+            ghcr.io/${{ github.repository | lower }}/app:${{ github.sha }}    
