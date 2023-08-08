@@ -13,4 +13,3 @@ Furthermore, the user can use slash-commands to gain statistics about what gamem
 - Battlemetrics: [website](https://battlemetrics.com)
 - Squadlanes: [website](https://squadlanes.com/#map=Narva&layer=RAAS+v1)
 - Squad Maps: [website](https://squadmaps.com)
-
