@@ -25,6 +25,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -276,10 +277,15 @@ public class BattlemetricsService {
 
         if (oldFlag.equals("Leer") && newFlag.equals("Seeding") && flagTimeInformation.getSeedingStartTime() == null){
             flagTimeInformation.setSeedingStartTime(time);
+
+            sendSeedingStartAnnouncement();
         }
 
         if ((oldFlag.equals("Seeding") || oldFlag.equals("Dead")) && newFlag.equals("Live") && flagTimeInformation.getLiveTime() == null) {
             flagTimeInformation.setLiveTime(time);
+
+            sendSeedingEndAnnouncement();
+
             String seedingStartTime = flagTimeInformation.getSeedingStartTime();
 
             SimpleDateFormat dfGerman = new SimpleDateFormat("HH:mm");
@@ -366,5 +372,104 @@ public class BattlemetricsService {
             }
             matchHistoryRepository.save(matchBefore);
         }
+    }
+
+    public void sendSeedingStartAnnouncement(){
+        Settings settings = settingsRepository.findById(1);
+
+        if (configuration.isProd == 1) {
+        bot.getJda().getGuildById(settings.getDsgGuildId()).getNewsChannelById(settings.getDsgSeedingAnnouncementChannelId()).sendMessage("<@&"+settings.getDsgServerSeederRoleId()+">").addEmbeds(createEmbedServerSeeding().build()).queue();
+
+        } else if (configuration.isProd == 0) {
+            bot.getJda().getGuildById(settings.getTestGuildId()).getNewsChannelById(settings.getTestSeedingAnnouncementChannelId()).sendMessage("<@&"+settings.getTestServerSeederRoleId()+">").addEmbeds(createEmbedServerSeeding().build()).queue();
+        }
+    }
+
+    public void sendSeedingEndAnnouncement(){
+        Settings settings = settingsRepository.findById(1);
+
+        if (configuration.isProd == 1) {
+            bot.getJda().getGuildById(settings.getDsgGuildId()).getNewsChannelById(settings.getDsgSeedingAnnouncementChannelId()).sendMessageEmbeds(createEmbedServerSeedingEnd().build()).queue();
+
+        } else if (configuration.isProd == 0) {
+            bot.getJda().getGuildById(settings.getTestGuildId()).getNewsChannelById(settings.getTestSeedingAnnouncementChannelId()).sendMessageEmbeds(createEmbedServerSeedingEnd().build()).queue();
+        }
+    }
+
+    public EmbedBuilder createEmbedServerSeeding() {
+
+        EmbedBuilder eb = new EmbedBuilder();
+
+        eb.setTitle("Das Seeding hat begonnen!" , null);
+
+        eb.setDescription(getRandomSeedingAnnouncementText());
+
+        eb.setColor(new Color(255, 196, 12));
+        eb.setFooter("© official DSG Bot", "https://dsg-gaming.de/images/og.jpg");
+        eb.setImage(getRandomSeedingAnnouncementImageUrl());
+        eb.setTimestamp(Instant.now());
+
+        return eb;
+    }
+
+    public EmbedBuilder createEmbedServerSeedingEnd() {
+
+        EmbedBuilder eb = new EmbedBuilder();
+
+        eb.setTitle("Wir sind live!" , null);
+
+        eb.setDescription("Danke für's Seeden <3");
+
+        eb.setColor(new Color(255, 196, 12));
+        eb.setFooter("© official DSG Bot", "https://dsg-gaming.de/images/og.jpg");
+        eb.setTimestamp(Instant.now());
+
+        return eb;
+    }
+
+
+    public String getRandomSeedingAnnouncementText(){
+        List<String> seedingAnnouncementList = new ArrayList<>();
+        seedingAnnouncementList.add("Das seeden hat begonnen, kommt ran!");
+        seedingAnnouncementList.add("Wir sind am Seeden! Kommt und bringt den Server mit uns zusammen zum Laufen.");
+        seedingAnnouncementList.add("Die Heinzelmännchen haben euch schon eine HUB errichtet und alles steht bereit. Es wird angeseedet. Kommt vorbei und spielt mit uns!");
+        seedingAnnouncementList.add("Seedingbären\n" +
+                "Seeden hier und dort und überall\n" +
+                "Sie sind für dich da wenn du sie brauchst\n" +
+                "Das sind die Seedingbären!\n" +
+                "\n" +
+                "Kommense ran!");
+        seedingAnnouncementList.add("Der Server füllt sich immer schneller! :slight_smile: Kommense ran!");
+        seedingAnnouncementList.add("Wir starten das Seeden,\n" +
+                "kommt ran, verdient euch Seedingpunkte\n" +
+                "und unterstützt den Server.");
+        seedingAnnouncementList.add("Der DSG Server wartet auf seine Spieler! An diesem wunderschönen Tag wird geseedet. Kommt und helft mit!");
+
+        int min = 1;
+        int max = seedingAnnouncementList.size();
+        int range = max - min + 1;
+        int rand = (int) (Math.random() * range) + min;
+        return seedingAnnouncementList.get(rand - 1);
+    }
+
+
+    public String getRandomSeedingAnnouncementImageUrl(){
+        List<String> seedingAnnouncementImageList = new ArrayList<>();
+
+        seedingAnnouncementImageList.add("https://i.imgur.com/IQqtnM9.jpeg");
+        seedingAnnouncementImageList.add("https://i.imgur.com/NS4UjRR.jpeg");
+        seedingAnnouncementImageList.add("https://i.imgur.com/v881yAH.png");
+        seedingAnnouncementImageList.add("https://i.imgur.com/NxDtXod.jpeg");
+        seedingAnnouncementImageList.add("https://i.imgur.com/NboPZVe.png");
+        seedingAnnouncementImageList.add("https://i.imgur.com/RnyV4v9.png");
+        seedingAnnouncementImageList.add("https://i.imgur.com/w5GcE64.jpeg");
+        seedingAnnouncementImageList.add("https://i.imgur.com/Ngq1MBY.png");
+        seedingAnnouncementImageList.add("https://i.imgur.com/zqovhnu.png");
+
+        int min = 1;
+        int max = seedingAnnouncementImageList.size();
+        int range = max - min + 1;
+        int rand = (int) (Math.random() * range) + min;
+        return seedingAnnouncementImageList.get(rand - 1);
     }
 }

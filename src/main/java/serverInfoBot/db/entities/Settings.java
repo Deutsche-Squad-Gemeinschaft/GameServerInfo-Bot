@@ -23,4 +23,8 @@ public class Settings {
     private String testTextChannelId;
     private String testMessageId;
     private String testGuildId;
+    private String dsgSeedingAnnouncementChannelId;
+    private String testSeedingAnnouncementChannelId;
+    private String dsgServerSeederRoleId;
+    private String testServerSeederRoleId;
 }
